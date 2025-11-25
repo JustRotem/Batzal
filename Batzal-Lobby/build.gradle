@@ -66,6 +66,7 @@ tasks {
         archiveClassifier.set('') // overwrite the normal JAR
         mergeServiceFiles() // fixes META-INF merge issues in Gradle 9
 
+        destinationDirectory = file("$rootDir/")
         // You can relocate packages if needed to avoid classpath issues:
 //         relocate 'com.zaxxer.hikari', 'net.justrotem.libs.hikari'
 //         relocate 'de.rapha149.signgui', 'net.justrotem.libs.signgui'

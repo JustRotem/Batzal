@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: net.luckperms:api:5.5" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="net.luckperms" artifactId="api" version="5.5" baseVersion="5.5" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../../../../Gradle/gradle-9.2.0/caches/modules-2/files-2.1/net.luckperms/api/5.5/6026ac98fcf728a9e12b37eaabe927fccea0771f/api-5.5.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../../../../../Gradle/gradle-9.2.0/caches/modules-2/files-2.1/net.luckperms/api/5.5/b51005dcedad88e920e77dc3ad2099a1429b8721/api-5.5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

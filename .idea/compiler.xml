@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="Batzal-Data" target="21" />
+      <module name="Batzal-Data.main" target="21" />
+      <module name="Batzal-Data.test" target="21" />
+      <module name="Batzal-Game" target="21" />
+      <module name="Batzal-Game.main" target="21" />
+      <module name="Batzal-Game.test" target="21" />
+      <module name="Batzal-Lobby" target="21" />
+      <module name="Batzal-Lobby.main" target="21" />
+      <module name="Batzal-Lobby.test" target="21" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
