@@ -1,0 +1,9 @@
+Nick:
+  Ranks:
+    - default
+    - vip
+    - vip+
+    - mvp
+    - mvp+
+
+Debugging: false

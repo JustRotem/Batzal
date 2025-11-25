@@ -1,0 +1,14 @@
+name: Batzal-Lobby
+version: '1.0'
+main: net.justrotem.lobby.Main
+api-version: '1.21.8'
+
+depend:
+  - Batzal-Data
+  - ProtocolLib
+
+softdepend:
+  - LuckPerms
+  - PlaceholderAPI
+  - TAB
+  - NameTags

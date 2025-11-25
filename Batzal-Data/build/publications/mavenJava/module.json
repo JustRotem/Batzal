@@ -1,0 +1,96 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "net.justrotem",
+    "module": "Batzal-Data",
+    "version": "1.0 ",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.2.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "Batzal-Data-1.0 .jar",
+          "url": "Batzal-Data-1.0 .jar",
+          "size": 29647,
+          "sha512": "e1c648d8995ce9cb71d88bb89a8b23ac91daae091a0d97a53d8aefbc4be5ae7c1b9ef1a588049d8cc55e886603a9759407678d7ec6240b1367ddfd91481505a7",
+          "sha256": "b817a285978de64f6658823974cb578625ac587569938d2cb3046a778105f8b5",
+          "sha1": "302c25f6f700eca6723356f48eaa2efe764fb8af",
+          "md5": "a56a76ea06f53b560d4717bee6f3ef19"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.json",
+          "module": "json",
+          "version": {
+            "requires": "20231013"
+          }
+        },
+        {
+          "group": "com.zaxxer",
+          "module": "HikariCP",
+          "version": {
+            "requires": "7.0.2"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "Batzal-Data-1.0 .jar",
+          "url": "Batzal-Data-1.0 .jar",
+          "size": 29647,
+          "sha512": "e1c648d8995ce9cb71d88bb89a8b23ac91daae091a0d97a53d8aefbc4be5ae7c1b9ef1a588049d8cc55e886603a9759407678d7ec6240b1367ddfd91481505a7",
+          "sha256": "b817a285978de64f6658823974cb578625ac587569938d2cb3046a778105f8b5",
+          "sha1": "302c25f6f700eca6723356f48eaa2efe764fb8af",
+          "md5": "a56a76ea06f53b560d4717bee6f3ef19"
+        }
+      ]
+    },
+    {
+      "name": "shadowRuntimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "shadowed",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "Batzal-Data-1.0 .jar",
+          "url": "Batzal-Data-1.0 .jar",
+          "size": 29647,
+          "sha512": "e1c648d8995ce9cb71d88bb89a8b23ac91daae091a0d97a53d8aefbc4be5ae7c1b9ef1a588049d8cc55e886603a9759407678d7ec6240b1367ddfd91481505a7",
+          "sha256": "b817a285978de64f6658823974cb578625ac587569938d2cb3046a778105f8b5",
+          "sha1": "302c25f6f700eca6723356f48eaa2efe764fb8af",
+          "md5": "a56a76ea06f53b560d4717bee6f3ef19"
+        }
+      ]
+    }
+  ]
+}
