@@ -1,7 +1,7 @@
 package net.justrotem.lobby.nick.gui.pages;
 
-import net.justrotem.data.hooks.LuckPermsManager;
 import net.justrotem.lobby.Main;
+import net.justrotem.lobby.hooks.LuckPermsManager;
 import net.justrotem.lobby.nick.gui.BookGUI;
 import net.justrotem.lobby.nick.gui.BookManager;
 import net.justrotem.lobby.utils.TextUtils;

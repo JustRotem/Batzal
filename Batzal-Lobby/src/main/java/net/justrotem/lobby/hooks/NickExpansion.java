@@ -1,7 +1,6 @@
 package net.justrotem.lobby.hooks;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import net.justrotem.data.hooks.LuckPermsManager;
 import net.justrotem.lobby.Main;
 import net.justrotem.lobby.nick.NickManager;
 import org.bukkit.Bukkit;

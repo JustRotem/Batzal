@@ -2,8 +2,8 @@ package net.justrotem.lobby.nick;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.data.hooks.LuckPermsManager;
 import net.justrotem.lobby.Main;
+import net.justrotem.lobby.hooks.LuckPermsManager;
 import net.justrotem.lobby.nick.gui.BookManager;
 import net.justrotem.lobby.skins.SkinManager;
 import net.justrotem.lobby.utils.TextUtils;
@@ -153,5 +153,28 @@ public class NickCommand implements BasicCommand {
     @Override
     public @Nullable String permission() {
         return "batzal.nick.use";
+    }
+
+    public static class UnNickCommand implements BasicCommand {
+
+        @Override
+        public void execute(CommandSourceStack source, String[] args) {
+            if (Utility.isConsole(source)) return;
+            Player player = (Player) source.getSender();
+
+            if (!NickManager.isNicked(player)) {
+                player.sendMessage(TextUtils.color("&cYou are not nicked!"));
+                return;
+            }
+
+            NickManager.resetNick(player);
+
+            Bukkit.getScheduler().runTaskLater(Main.getInstance(), () -> player.sendMessage(TextUtils.color("&aYour nickname has been reset!")), 3L);
+        }
+
+        @Override
+        public @Nullable String permission() {
+            return "batzal.nick";
+        }
     }
 }

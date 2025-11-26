@@ -29,11 +29,9 @@ public class StuckCommand implements BasicCommand {
 
             Location location = new Location(world, config.getDouble("Spawn.x"), config.getDouble("Spawn.y"), config.getDouble("Spawn.z"), config.getInt("Spawn.yaw"), config.getInt("Spawn.pitch"));
 
-            location.setY(location.getY() - 4);
             if (location.getBlock().getType() == Material.AIR) location.setY(world.getHighestBlockAt(location).getY() + 1);
 
-            location.setY(location.getY() + 4);
-            if (!(player.hasPermission("batzal.fly") && location.getBlock().getType() == Material.AIR)) location.setY(world.getHighestBlockAt(location).getY() + 1);
+            if (player.hasPermission("batzal.fly")) location.add(0, 2, 0);
 
             return location;
         } catch (Exception ignored) {

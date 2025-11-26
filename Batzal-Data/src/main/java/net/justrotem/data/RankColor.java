@@ -3,7 +3,7 @@ package net.justrotem.data;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-public class RankColor {
+public abstract class RankColor {
 
     public enum Color {
         Red('c', 0, 0),

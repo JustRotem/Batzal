@@ -37,6 +37,7 @@
     <orderEntry type="library" name="Gradle: org.json:json:20231013" level="project" />
     <orderEntry type="library" name="Gradle: com.zaxxer:HikariCP:7.0.2" level="project" />
     <orderEntry type="library" name="Gradle: de.rapha149.signgui:signgui:2.5.4" level="project" />
+    <orderEntry type="module" module-name="Batzal-Data.main" />
     <orderEntry type="library" name="Gradle: org.slf4j:slf4j-api:2.0.17" level="project" />
     <orderEntry type="library" name="Gradle: io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Gradle: net.kyori:adventure-text-serializer-ansi:4.25.0" level="project" />

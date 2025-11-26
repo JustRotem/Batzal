@@ -39,11 +39,11 @@
     <orderEntry type="library" scope="PROVIDED" name="Gradle: io.papermc.paper:paper-api:1.21.10-R0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: net.luckperms:api:5.5" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: me.clip:placeholderapi:2.11.7" level="project" />
-    <orderEntry type="module" module-name="Batzal-Data.main" scope="PROVIDED" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: net.dmulloy2:ProtocolLib:5.4.0" level="project" />
     <orderEntry type="library" name="Gradle: org.json:json:20231013" level="project" />
     <orderEntry type="library" name="Gradle: com.zaxxer:HikariCP:7.0.2" level="project" />
     <orderEntry type="library" name="Gradle: de.rapha149.signgui:signgui:2.5.4" level="project" />
+    <orderEntry type="module" module-name="Batzal-Data.main" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: net.kyori:adventure-text-serializer-ansi:4.25.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: net.minecrell:terminalconsoleappender:1.3.0" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: org.apache.logging.log4j:log4j-core:2.24.1" level="project" />

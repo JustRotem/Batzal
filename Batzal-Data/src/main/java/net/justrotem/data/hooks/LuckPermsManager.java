@@ -1,6 +1,6 @@
 package net.justrotem.data.hooks;
 
-import net.justrotem.data.Main;
+import net.justrotem.data.utils.Utility;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.luckperms.api.LuckPerms;
@@ -13,28 +13,33 @@ import net.luckperms.api.node.types.PrefixNode;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public class LuckPermsManager {
+public abstract class LuckPermsManager {
 
     private static LuckPerms api;
+    private static JavaPlugin plugin = null;
 
-    public static void init(Main plugin) {
+    public static void init(JavaPlugin plugin) {
         Plugin lpPlugin = Bukkit.getPluginManager().getPlugin("LuckPerms");
 
         if (lpPlugin != null && lpPlugin.isEnabled()) {
             try {
                 api = LuckPermsProvider.get(); // get LuckPerms API
-                if (plugin.isDebug()) plugin.getLogger().info("LuckPerms detected and initialized!");
+                if (Utility.isDebug(plugin)) plugin.getLogger().info("LuckPerms detected and initialized!");
+                LuckPermsManager.plugin = plugin;
             } catch (IllegalStateException e) {
-                if (plugin.isDebug()) plugin.getLogger().warning("LuckPerms plugin is present but API could not be loaded.");
+                if (Utility.isDebug(plugin)) plugin.getLogger().warning("LuckPerms plugin is present but API could not be loaded.");
             }
         } else {
-            if (plugin.isDebug()) plugin.getLogger().info("LuckPerms not found, skipping integration.");
+            if (Utility.isDebug(plugin)) plugin.getLogger().info("LuckPerms not found, skipping integration.");
         }
+
     }
 
     public static boolean isHooked() {
@@ -174,13 +179,17 @@ public class LuckPermsManager {
         return user.getPrimaryGroup();
     }
 
+    public static String getPrimaryGroup(Player player) {
+        return getPrimaryGroup(player.getUniqueId());
+    }
+
     public static void setPrefix(Player player, String prefix, int priority) {
         if (api == null) return;
 
         // Remove all old prefixes if you want a clean slate
         removePrefixes(player, priority);
 
-        Bukkit.getScheduler().runTaskLater(Main.getInstance(), () -> {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
             // Add new prefix with specified priority (higher number = higher priority)
             addPrefix(player, prefix, priority);
         }, 5L);
@@ -234,6 +243,18 @@ public class LuckPermsManager {
             // Save changes
             api.getUserManager().saveUser(user);
         });
+    }
+
+    public static boolean hasPermission(Group group, String permission) {
+        if (api == null) return false;
+
+        try {
+            if (group == null) return false;
+
+            return group.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private static Component color(String text) {

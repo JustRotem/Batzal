@@ -1,8 +1,0 @@
-name: Batzal-Data
-version: '1.0.0'
-author: JustRotem
-main: net.justrotem.data.Main
-api-version: '1.21.8'
-
-softdepend:
-  - LuckPerms

@@ -27,11 +27,11 @@
         {
           "name": "Batzal-Data-1.0.0.jar",
           "url": "Batzal-Data-1.0.0.jar",
-          "size": 33412,
-          "sha512": "d25b0bc5ae1dbdfe62507362307dbf9931de7d45fc667000ea1770e0aeed95722099f10d2da8d5436dba7ab9541738cbf6e980117f7008275b17c9881c86180a",
-          "sha256": "a06bc56bf3113c1d0fbc5f09cae1aa83b950d9a32dc14d86ed931a842d7e1f42",
-          "sha1": "e5bde07fe71887663d3809e6bbf22ede227fde15",
-          "md5": "868c026bb6d89d8811ffa63985e94427"
+          "size": 30595,
+          "sha512": "01b66506a5861e2cc154427ba1563c44424ac21a679041392b86e396a867d3c93b7b0683e89ed0df684c3130631d249fadb20846562144e2231846c260974c5f",
+          "sha256": "ccc4f4e23363edfb40c66902b438fb689b1894206be34d25659105979ea21deb",
+          "sha1": "96179f60dfd454593ac2f9d9007a7466f8a43d65",
+          "md5": "13c60890ba5b7fb21657a5cdf9de2e98"
         }
       ]
     },
@@ -64,31 +64,11 @@
         {
           "name": "Batzal-Data-1.0.0.jar",
           "url": "Batzal-Data-1.0.0.jar",
-          "size": 33412,
-          "sha512": "d25b0bc5ae1dbdfe62507362307dbf9931de7d45fc667000ea1770e0aeed95722099f10d2da8d5436dba7ab9541738cbf6e980117f7008275b17c9881c86180a",
-          "sha256": "a06bc56bf3113c1d0fbc5f09cae1aa83b950d9a32dc14d86ed931a842d7e1f42",
-          "sha1": "e5bde07fe71887663d3809e6bbf22ede227fde15",
-          "md5": "868c026bb6d89d8811ffa63985e94427"
-        }
-      ]
-    },
-    {
-      "name": "shadowRuntimeElements",
-      "attributes": {
-        "org.gradle.category": "library",
-        "org.gradle.dependency.bundling": "shadowed",
-        "org.gradle.libraryelements": "jar",
-        "org.gradle.usage": "java-runtime"
-      },
-      "files": [
-        {
-          "name": "Batzal-Data-1.0.0.jar",
-          "url": "Batzal-Data-1.0.0.jar",
-          "size": 33412,
-          "sha512": "d25b0bc5ae1dbdfe62507362307dbf9931de7d45fc667000ea1770e0aeed95722099f10d2da8d5436dba7ab9541738cbf6e980117f7008275b17c9881c86180a",
-          "sha256": "a06bc56bf3113c1d0fbc5f09cae1aa83b950d9a32dc14d86ed931a842d7e1f42",
-          "sha1": "e5bde07fe71887663d3809e6bbf22ede227fde15",
-          "md5": "868c026bb6d89d8811ffa63985e94427"
+          "size": 30595,
+          "sha512": "01b66506a5861e2cc154427ba1563c44424ac21a679041392b86e396a867d3c93b7b0683e89ed0df684c3130631d249fadb20846562144e2231846c260974c5f",
+          "sha256": "ccc4f4e23363edfb40c66902b438fb689b1894206be34d25659105979ea21deb",
+          "sha1": "96179f60dfd454593ac2f9d9007a7466f8a43d65",
+          "md5": "13c60890ba5b7fb21657a5cdf9de2e98"
         }
       ]
     }

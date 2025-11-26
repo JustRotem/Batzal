@@ -4,6 +4,7 @@ import net.justrotem.data.PlayerData;
 import net.justrotem.data.PlayerManager;
 import net.justrotem.lobby.Main;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -20,21 +21,32 @@ public class VanishManager {
         return PlayerManager.getData(player).isVanished();
     }
 
-    public static void hidePlayer(Player player) {
-        Bukkit.getOnlinePlayers().stream()
-                .filter(p -> !p.equals(player))
-                .filter(p -> !p.hasPermission("batzal.vanish.see"))
-                .forEach(p -> p.hidePlayer(Main.getInstance(), player));
+    public static void hidePlayer(Player viewed) {
+        setVanished(viewed, true);
 
-        setVanished(player, true);
+        Bukkit.getOnlinePlayers().stream()
+                .filter(viewer -> viewer != viewed)
+                .filter(viewer -> !canSee(viewer, viewed))
+                .forEach(viewer -> viewer.hidePlayer(Main.getInstance(), viewed));
     }
 
-    public static void showPlayer(Player player) {
-        Bukkit.getOnlinePlayers().stream()
-                .filter(p -> !p.equals(player))
-                .forEach(p -> p.showPlayer(Main.getInstance(), player));
+    public static void showPlayer(Player viewed) {
+        setVanished(viewed, false);
 
-        setVanished(player, false);
+        Bukkit.getOnlinePlayers().stream()
+                .filter(viewer -> !viewer.equals(viewed))
+                .forEach(viewer -> viewer.showPlayer(Main.getInstance(), viewed));
+    }
+
+    public static boolean canSee(CommandSender viewer, Player viewed) {
+        if (viewer.hasPermission("batzal.vanish.see")) return true;
+        if (viewed != null) return !isInvisible(viewed);
+
+        return false;
+    }
+
+    public static boolean canSee(CommandSender viewer) {
+        return canSee(viewer, null);
     }
 
     public static List<UUID> getAllVanishedPlayers() {

@@ -1,12 +1,10 @@
 package net.justrotem.lobby.utils;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketContainer;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.justrotem.data.PlayerManager;
-import net.kyori.adventure.text.Component;
+import net.justrotem.lobby.hooks.LuckPermsManager;
+import net.justrotem.lobby.nick.NickManager;
+import net.justrotem.lobby.sql.MySQL;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,13 +15,31 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
-public class Utility {
+public class Utility extends net.justrotem.data.utils.Utility {
+
+    public static void initialize(JavaPlugin plugin) {
+        plugin.getLogger().info("Loading MySQL!");
+        MySQL.connect(plugin);
+
+        // Initialize LuckPerms safely
+        LuckPermsManager.init(plugin);
+    }
+
+    public static void shutdown(JavaPlugin plugin) {
+        plugin.getLogger().info("Saving players data..");
+        PlayerManager.saveAllPlayers();
+        NickManager.saveAllPlayers();
+
+        plugin.getLogger().info("Closing MySQL..");
+        net.justrotem.data.sql.MySQL.disconnect();
+    }
 
     public static UUID parseMojangUUID(String mojangUUID) {
         if (mojangUUID.length() != 32) {
@@ -67,16 +83,20 @@ public class Utility {
      * @param mapper    how to convert item to String
      * @param <T>       type of items
      */
-    public static <T> void addCompletion(String[] args, int length, List<String> arguments, T[] items, Function<T, String> mapper) {
-        String search = (args.length == length) ? args[length - 1].toLowerCase() : null;
-        if (args.length == length || args.length == length - 1) {
+    private static <T> void addCompletion(String[] args, int length, List<String> arguments, T[] items, Function<T, String> mapper) {
+        if (length == 1 && args.length == 0)
+            arguments.addAll(Arrays.stream(items)
+                .map(mapper)
+                .toList()
+            );
+
+        if (args.length == length) {
+            String search = args[length - 1].toLowerCase();
             arguments.addAll(Arrays.stream(items)
                     .map(mapper)
-                    .filter(Objects::nonNull)
-                    .filter(s -> search == null || s.toLowerCase().startsWith(search))
-                    .sorted()
-                    .distinct()
-                    .toList());
+                    .filter(name -> name.toLowerCase().startsWith(search))
+                    .toList()
+            );
         }
     }
 
@@ -103,34 +123,21 @@ public class Utility {
      * @param source     command source stack
      * @param permission optional permission (nullable)
      */
-    public static void addPlayerCompletion(String[] args, int length, List<String> arguments, CommandSourceStack source, String permission) {
+    public static void addPlayerCompletion(String[] args, int length, List<String> arguments, CommandSourceStack source, String permission, boolean withSelf) {
         CommandSender sender = source.getSender();
-        String search = (args.length == length) ? args[length - 1].toLowerCase() : null;
-        if (args.length != length && args.length != length - 1) return;
         if (permission != null && !permission.isEmpty() && !sender.hasPermission(permission)) return;
 
-        arguments.addAll(Bukkit.getOnlinePlayers().stream()
-                .map(Player::getName)
-                .filter(name -> !name.equalsIgnoreCase(sender.getName()))
-                .filter(name -> search == null || name.toLowerCase().startsWith(search))
-                .sorted()
-                .distinct()
-                .toList());
+        addCompletion(args, length, arguments, Bukkit.getOnlinePlayers().stream()
+                .filter(player -> {
+                    if (!withSelf) return player != sender;
+                    return true;
+                })
+                .map(Player::getName).toArray()
+        );
     }
 
-    public static void playExplosion(Location location, int power, Collection<Player> players) {
-        ProtocolManager pm = ProtocolLibrary.getProtocolManager();
-        PacketContainer packet = pm.createPacket(PacketType.Play.Server.EXPLOSION);
-        packet.getModifier().writeDefaults();
-        packet.getDoubles().write(0, location.getX()).write(1, location.getY()).write(2, location.getZ());
-        packet.getFloat().write(0, (float) power);
-        players.forEach(online -> {
-            pm.sendServerPacket(online, packet);
-        });
-    }
-
-    public static void playExplosion(Location location, int power) {
-        playExplosion(location, power, location.getWorld().getPlayers());
+    public static void addPlayerCompletion(String[] args, int length, List<String> arguments, CommandSourceStack source, String permission) {
+        addPlayerCompletion(args, length, arguments, source, permission, false);
     }
 
     public static void strikeLightningWithoutFire(Location location) {

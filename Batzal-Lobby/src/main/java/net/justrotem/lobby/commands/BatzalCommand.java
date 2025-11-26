@@ -50,7 +50,7 @@ public class BatzalCommand implements BasicCommand {
             return;
         }
 
-        if (args[0].equalsIgnoreCase("nickedplayers")) {
+        if (args[0].equalsIgnoreCase("nickedplayers") && NickManager.canSee(sender)) {
             Component message = Component.text().build();
             List<NickData> list = NickManager.getNickedPlayers();
 
@@ -92,7 +92,7 @@ public class BatzalCommand implements BasicCommand {
             return;
         }
 
-        if (args[0].equalsIgnoreCase("vanishedplayers")) {
+        if (args[0].equalsIgnoreCase("vanishedplayers") && VanishManager.canSee(sender)) {
             Component message = Component.text().build();
             List<Player> online = VanishManager.getOnlineVanishedPlayers();
             if (!online.isEmpty()) {
@@ -155,7 +155,9 @@ public class BatzalCommand implements BasicCommand {
     public Collection<String> suggest(CommandSourceStack source, String[] args) {
         List<String> arguments = new ArrayList<>();
 
-        Utility.addCompletion(args, 1, arguments, "reload", "nickedplayers", "vanishedplayers", "spawn");
+        CommandSender sender = source.getSender();
+
+        Utility.addCompletion(args, 1, arguments, "reload", sender.hasPermission("batzal.nick.see") ? "nickedplayers" : "", VanishManager.canSee(sender) ? "vanishedplayers" : "", "spawn");
 
         return arguments;
     }

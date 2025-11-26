@@ -1,13 +1,15 @@
 package net.justrotem.lobby.nick;
 
 import net.justrotem.data.PlayerManager;
-import net.justrotem.data.hooks.LuckPermsManager;
 import net.justrotem.lobby.Main;
+import net.justrotem.lobby.hooks.LuckPermsManager;
 import net.justrotem.lobby.skins.SkinManager;
 import net.justrotem.lobby.sql.AsyncNickDataManager;
+import net.justrotem.lobby.sql.MySQL;
 import net.justrotem.lobby.utils.TextUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 
@@ -30,7 +32,7 @@ public class NickManager implements Listener {
     }
 
     //<editor-fold desc="Data methods">
-    private static final AsyncNickDataManager nickData = Main.getInstance().getMySQLConfig().getNickData();
+    private static final AsyncNickDataManager nickData = MySQL.getNickData();
     private static final HashMap<UUID, NickData> recordedNicks = new HashMap<>();
 
     public static List<NickData> getPlayers() {
@@ -239,6 +241,17 @@ public class NickManager implements Listener {
 
     public static boolean isLobbyNicked(Player player) {
         return isNicked(player) && canChange(player) && hasDifferentName(player);
+    }
+
+    public static boolean canSee(CommandSender sender, Player target) {
+        if (sender.hasPermission("batzal.nick.see")) return true;
+        if (target != null) return !isLobbyNicked(target);
+
+        return false;
+    }
+
+    public static boolean canSee(CommandSender sender) {
+        return canSee(sender, null);
     }
 
     public static boolean hasDifferentName(Player player) {

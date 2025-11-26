@@ -1,6 +1,6 @@
 package net.justrotem.lobby.sql;
 
-import net.justrotem.data.sql.AsyncMySQLManager;
+import net.justrotem.data.sql.MySQLManager;
 import net.justrotem.lobby.nick.NickData;
 import org.bukkit.entity.Player;
 
@@ -13,10 +13,10 @@ import java.util.concurrent.CompletableFuture;
 
 public class AsyncNickDataManager {
 
-    private final AsyncMySQLManager sql;
+    private final MySQLManager sql;
     private final String table = "batzal_nicked";
 
-    public AsyncNickDataManager(AsyncMySQLManager sql) {
+    public AsyncNickDataManager(MySQLManager sql) {
         this.sql = sql;
 
         sql.createTable(table, "uuid VARCHAR(36) PRIMARY KEY, " +

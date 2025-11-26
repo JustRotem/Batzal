@@ -10,5 +10,4 @@ JoinMessages: #lp group: "message"
   mvp+: "%displayname% &6joined the lobby!"
   mvp++: " &b>&c>&a> %displayname% &6joined the lobby! &a<&c<&b< "
 
-
 Debugging: false

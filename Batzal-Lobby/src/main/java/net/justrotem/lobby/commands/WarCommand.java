@@ -15,6 +15,8 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Duration;
@@ -34,34 +36,36 @@ public class WarCommand implements BasicCommand {
         Player player = (Player) source.getSender();
 
         if (isWarMode()) {
+            warMode = false;
             Bukkit.getOnlinePlayers().forEach(p -> p.showTitle(Title.title(TextUtils.color("&c&lWAR MODE"), TextUtils.color("&6DEACTIVATED BY ").append(PlayerManager.getDisplayName(p)), Title.Times.times(Duration.of(1, ChronoUnit.SECONDS), Duration.of(4, ChronoUnit.SECONDS), Duration.of(1, ChronoUnit.SECONDS)))));
 
-            Bukkit.getScheduler().runTaskLater(Main.getInstance(), () -> {
-                CooldownManager.startCooldown(player, Main.CooldownCategory.WarMode, Duration.of(10, ChronoUnit.SECONDS));
+            CooldownManager.startCooldown(player, Main.CooldownCategory.WarMode, Duration.of(20, ChronoUnit.SECONDS));
 
-                Bukkit.getScheduler().runTaskTimer(Main.getInstance(), () -> {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
                     long second = CooldownManager.getRemaining(player, Main.CooldownCategory.WarMode);
                     for (Player p : Bukkit.getOnlinePlayers()) {
-                        if (second <= 5) {
-                            p.showTitle(Title.title(TextUtils.color("&c" + second), TextUtils.color("&eServer restart"), Title.Times.times(Duration.of(1, ChronoUnit.SECONDS), Duration.of(1, ChronoUnit.SECONDS), Duration.of(1, ChronoUnit.SECONDS))));
-                            p.sendMessage(TextUtils.color("&eServer restart in &c%second%&e seconds!".replace("%second%", String.valueOf(Main.CooldownCategory.WarMode))));
+                        if (second == 0 || CooldownManager.isReady(player, Main.CooldownCategory.WarMode)) {
+                            p.showTitle(Title.title(TextUtils.color("&eServer is restarting!"), Component.text(""), Title.Times.times(Duration.of(1, ChronoUnit.SECONDS), Duration.of(4, ChronoUnit.SECONDS), Duration.of(1, ChronoUnit.SECONDS))));
+                            cancel();
+                            Bukkit.shutdown();
                         }
 
-                        if (CooldownManager.isReady(player, Main.CooldownCategory.WarMode)) {
-                            p.showTitle(Title.title(TextUtils.color("&eServer is restarting!"), Component.text(""), Title.Times.times(Duration.of(1, ChronoUnit.SECONDS), Duration.of(5, ChronoUnit.SECONDS), Duration.of(1, ChronoUnit.SECONDS))));
+                        if (second == 10 || second <= 5) {
+                            p.showTitle(Title.title(TextUtils.color("&c" + second), TextUtils.color("&eto Server restart"), Title.Times.times(Duration.of(1, ChronoUnit.SECONDS), Duration.of(1, ChronoUnit.SECONDS), Duration.of(1, ChronoUnit.SECONDS))));
+                            p.sendMessage(TextUtils.color("&eServer restart in &c%second% &eseconds!".replace("%second%", String.valueOf(second))));
                             return;
                         }
                     }
-                }, 0, 10);
-
-                Bukkit.getScheduler().runTaskLaterAsynchronously(Main.getInstance(), Bukkit::shutdown, 1);
-            }, 20);
+                }
+            }.runTaskTimer(Main.getInstance(), 200, 20);
             return;
         }
 
         warMode = true;
         for (Player p : Bukkit.getOnlinePlayers()) {
-            p.showTitle(Title.title(TextUtils.color("&c&lWAR MODE"), TextUtils.color("&6ACTIVATED BY ").append(PlayerManager.getDisplayName(p)), Title.Times.times(Duration.of(1, ChronoUnit.SECONDS), Duration.of(10, ChronoUnit.SECONDS), Duration.of(1, ChronoUnit.SECONDS))));
+            p.showTitle(Title.title(TextUtils.color("&c&lWAR MODE"), TextUtils.color("&6ACTIVATED BY ").append(PlayerManager.getDisplayName(p)), Title.Times.times(Duration.of(1, ChronoUnit.SECONDS), Duration.of(4, ChronoUnit.SECONDS), Duration.of(1, ChronoUnit.SECONDS))));
 
             giveWarModeItems(p);
         }
@@ -86,4 +90,6 @@ public class WarCommand implements BasicCommand {
         player.getInventory().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
         player.getInventory().setBoots(new ItemStack(Material.LEATHER_BOOTS));
     }
+
+
 }

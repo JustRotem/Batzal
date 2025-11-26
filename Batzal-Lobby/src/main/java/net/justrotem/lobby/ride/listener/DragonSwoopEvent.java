@@ -4,6 +4,7 @@ import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.util.Vector;
+
 import javax.annotation.Nonnull;
 
 /**

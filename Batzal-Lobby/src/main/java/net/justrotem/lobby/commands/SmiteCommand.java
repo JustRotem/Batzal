@@ -2,8 +2,6 @@ package net.justrotem.lobby.commands;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.data.PlayerManager;
-import net.justrotem.lobby.utils.TextUtils;
 import net.justrotem.lobby.utils.Utility;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

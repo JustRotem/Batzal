@@ -2,6 +2,7 @@ package net.justrotem.data;
 
 import net.justrotem.data.hooks.LuckPermsManager;
 import net.justrotem.data.sql.AsyncUserDataManager;
+import net.justrotem.data.sql.MySQL;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -13,7 +14,7 @@ import java.util.*;
 public class PlayerManager {
 
     //<editor-fold desc="Data methods">
-    private static final AsyncUserDataManager userData = Main.getInstance().getMySQLConfig().getUserData();
+    private static final AsyncUserDataManager userData = MySQL.getUserData();
     private static final HashMap<UUID, PlayerData> recordedPlayers = new HashMap<>();
     private static final HashMap<Player, Component> lastMessages = new HashMap<>();
 
@@ -46,7 +47,9 @@ public class PlayerManager {
     }
 
     public static void registerAllPlayers() {
-        Bukkit.getOnlinePlayers().forEach(PlayerManager::registerPlayer);
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            registerPlayer(player);
+        }
     }
 
     public static void updatePlayer(Player player, PlayerData playerData) {
@@ -89,7 +92,7 @@ public class PlayerManager {
     }
 
     public static Component getRealDisplayName(Player player) {
-        return LuckPermsManager.getGroupPrefix(LuckPermsManager.getPrimaryGroup(player.getUniqueId())).append(player.name());
+        return LuckPermsManager.getGroupPrefix(LuckPermsManager.getPrimaryGroup(player)).append(player.name());
     }
 
     public static Component getDisplayName(Player player) {
@@ -101,7 +104,7 @@ public class PlayerManager {
     }
 
     public static String getLegacyRealDisplayName(Player player) {
-        return LuckPermsManager.getLegacyGroupPrefix(LuckPermsManager.getPrimaryGroup(player.getUniqueId())) + player.getName();
+        return LuckPermsManager.getLegacyGroupPrefix(LuckPermsManager.getPrimaryGroup(player)) + player.getName();
     }
 
     public static String getLegacyDisplayName(Player player) {

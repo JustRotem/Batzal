@@ -13,17 +13,17 @@ import java.util.concurrent.CompletableFuture;
 
 public class AsyncUserDataManager {
 
-    private final AsyncMySQLManager sql;
+    private final MySQLManager sql;
     private final String table = "batzal_players";
 
-    public AsyncUserDataManager(AsyncMySQLManager sql) {
+    public AsyncUserDataManager(MySQLManager sql) {
         this.sql = sql;
 
         sql.createTable(table, "uuid VARCHAR(36) PRIMARY KEY, " +
                 "username VARCHAR(16), " +
                 "is_vanished BOOLEAN DEFAULT FALSE, " +
                 "toggle_chat BOOLEAN DEFAULT FALSE, " +
-                "toggle_punch BOOLEAN DEFAULT TRUE, " +
+                "toggle_punch BOOLEAN DEFAULT FALSE, " +
                 "total_experience INT, " +
                 "rank_color VARCHAR(16), " +
                 "prefix_color VARCHAR(16), " +
@@ -36,7 +36,7 @@ public class AsyncUserDataManager {
         sql.executeAsync(() -> {
             try (PreparedStatement ps = sql.getConnection().prepareStatement(
                     "INSERT IGNORE INTO " + table + " (uuid, username, is_vanished, toggle_chat, toggle_punch, total_experience, rank_color, prefix_color, message_mode, status) " +
-                            "VALUES (?, ?, FALSE, FALSE, TRUE, 0, 'Red', 'Gold', NULL, NULL)"
+                            "VALUES (?, ?, FALSE, FALSE, FALSE, 0, 'Red', 'Gold', NULL, NULL)"
             )) {
                 ps.setString(1, player.getUniqueId().toString());
                 ps.setString(2, player.getName());

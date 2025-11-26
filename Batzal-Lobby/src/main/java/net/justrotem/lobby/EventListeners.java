@@ -2,9 +2,9 @@ package net.justrotem.lobby;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.justrotem.data.PlayerManager;
-import net.justrotem.data.hooks.LuckPermsManager;
 import net.justrotem.data.utils.CooldownManager;
 import net.justrotem.lobby.commands.*;
+import net.justrotem.lobby.hooks.LuckPermsManager;
 import net.justrotem.lobby.nick.NickManager;
 import net.justrotem.lobby.utils.TextUtils;
 import net.justrotem.lobby.utils.Utility;
@@ -12,7 +12,11 @@ import net.justrotem.lobby.vanish.VanishManager;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,10 +25,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
+import org.bukkit.event.world.TimeSkipEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -41,6 +47,7 @@ public class EventListeners implements Listener {
     @EventHandler
     public void join(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        PlayerManager.registerPlayer(player);
         NickManager.registerPlayer(player);
 
         VanishManager.updateVanishedPlayers();
@@ -77,12 +84,23 @@ public class EventListeners implements Listener {
             }
         }
 
+        if (LuckPermsManager.hasPermission(player, "batzal.fly")) {
+            player.setAllowFlight(true);
+            player.setFlying(true);
+        }
+
+        player.setHealth(player.getAttribute(Attribute.MAX_HEALTH).getBaseValue());
+        player.setFoodLevel(20);
+
+        StuckCommand.teleport(player);
+
         event.joinMessage(!VanishManager.isInvisible(player) ? joinMessage : null);
     }
 
     @EventHandler
     public void quit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        PlayerManager.savePlayer(player);
         NickManager.savePlayer(player);
 
         event.quitMessage(null);
@@ -92,9 +110,31 @@ public class EventListeners implements Listener {
     public void chat(AsyncChatEvent event) {
         if (event.isCancelled()) return;
 
+        Player player = event.getPlayer();
         event.setCancelled(true);
 
-        Player player = event.getPlayer();
+        // afk update
+
+        // Toggle chat
+        if (PlayerManager.isChatToggled(player)) {
+            player.sendMessage(TextUtils.color("&cYou have chat disabled! Enable it again with /togglechat"));
+            return;
+        }
+
+        // Same message
+        if (PlayerManager.isSameMessage(player, event.message())) {
+            player.sendMessage(TextUtils.color("&6&m---------------------------------------------\n&r&cYou cannot say the same message twice!\n&6&m---------------------------------------------"));
+            return;
+        }
+
+        // Advertising - should add a check for how many times and maybe adding mute/ban feature.
+        if (PlayerManager.isAdvertising(player, event.message())) {
+            player.sendMessage(TextUtils.color("&6&m---------------------------------------------\n&r&cAdvertising is against the rules. You will be permanently\n&c banned from the server if you attempt to advertise.\n&6&m---------------------------------------------"));
+            return;
+        }
+
+        // Save the message as the @player last message
+        PlayerManager.setLastMessage(player, event.originalMessage());
 
         // Prefix
         Component message;
@@ -146,11 +186,44 @@ public class EventListeners implements Listener {
         }
     }
 
+    @EventHandler(priority=EventPriority.LOWEST)
+    public void punch(EntityDamageByEntityEvent event) {
+        if (WarCommand.isWarMode()) return;
+
+        event.setCancelled(true);
+        if (!(event.getDamager() instanceof Player player && event.getEntity() instanceof Player target)) return;
+
+        if (VanishManager.isInvisible(player) || VanishManager.isInvisible(target)) return;
+
+        if (PlayerManager.getData(target).isTogglePunch()) return;
+
+        if (!LuckPermsManager.hasPermission(player, "batzal.punch.puncher")) return;
+        if (!LuckPermsManager.hasPermission(target, "batzal.punch.punched")) return;
+
+        if (!CooldownManager.isReady(player, Main.CooldownCategory.Punch)) {
+            player.sendMessage(TextUtils.color("&cYou have to wait %cooldown% more seconds!".replace("%cooldown%", String.valueOf(CooldownManager.getRemaining(player, Main.CooldownCategory.Punch)))));
+            return;
+        }
+
+        CooldownManager.startCooldown(player, Main.CooldownCategory.Punch, Duration.of(1, ChronoUnit.MINUTES));
+
+        if (target.isFlying()) target.setFlying(false);
+        target.getLocation().getWorld().createExplosion(target.getLocation(), 5F, false, false);
+        target.setVelocity(new Vector(0.0D, 10.0, 0.0D));
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            //p.sendMessage(TextUtils.color(PunchMessages.getPunchMessages(player).replace("%displayname%", PlayerManager.getLegacyDisplayName(target))));
+        }
+    }
+
     @EventHandler
     public void entityDamage(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player player)) return;
-
-        if (VanishManager.isInvisible(player) || GodCommand.isOn(player)) {
+        if (
+                !(event.getEntity() instanceof Player player) ||
+                        VanishManager.isInvisible(player) ||
+                        GodCommand.isOn(player) ||
+                        !WarCommand.isWarMode()
+        ) {
             event.setCancelled(true);
             return;
         }
@@ -162,12 +235,7 @@ public class EventListeners implements Listener {
             }
 
             StuckCommand.teleport(player);
-            return;
         }
-
-        if (WarCommand.isWarMode()) return;
-
-        event.setCancelled(true);
     }
 
     @EventHandler
@@ -192,46 +260,11 @@ public class EventListeners implements Listener {
 
         event.setCancelled(true);
     }
-
-    @EventHandler
-    public void punch(EntityDamageByEntityEvent event) {
-        if (WarCommand.isWarMode()) return;
-
-        event.setCancelled(true);
-        if (!(event.getEntity() instanceof Player target && event.getDamager() instanceof Player player)) return;
-
-        if (VanishManager.isInvisible(player) || VanishManager.isInvisible(target)) return;
-
-        if (!player.hasPermission("batzal.punch.puncher")) return;
-        if (!target.hasPermission("batzal.punch.punched")) return;
-
-        if (!PlayerManager.getData(target).isTogglePunch()) return;
-
-        if (NickManager.isLobbyNicked(player) && !LuckPermsManager.getGroup(NickManager.getRank(player)).getCachedData().getPermissionData().checkPermission("batzal.punch.puncher").asBoolean()) return;
-
-        if (NickManager.isLobbyNicked(target) && !LuckPermsManager.getGroup(NickManager.getRank(target)).getCachedData().getPermissionData().checkPermission("batzal.punch.punched").asBoolean()) return;
-
-        CooldownManager.startCooldown(target, Main.CooldownCategory.Punch, Duration.of(1, ChronoUnit.MINUTES));
-
-        if (!player.hasPermission("batzal.punch.bypasscooldown") && CooldownManager.isReady(target, Main.CooldownCategory.Punch)) {
-            player.sendMessage(TextUtils.color("&cYou have to wait %cooldown% more seconds!".replace("%cooldown%", String.valueOf(CooldownManager.getRemaining(target, Main.CooldownCategory.Punch)))));
-            return;
-        }
-
-        if (target.isFlying()) target.setFlying(false);
-        Utility.playExplosion(target.getLocation(), 5);
-        target.setVelocity(new Vector(0.0D, 10.0, 0.0D));
-
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            p.playSound(target.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1, 1);
-            p.sendMessage(TextUtils.color(PunchMessages.getPunchMessages(player).replace("%displayname%", PlayerManager.getLegacyDisplayName(target))));
-        }
-    }
     
-    @EventHandler
+    @EventHandler(priority=EventPriority.LOWEST)
     public void animation(PlayerAnimationEvent event) {
         Player player = event.getPlayer();
-        ItemStack itemInHand = player.getInventory().getItemInHand();
+        ItemStack itemInHand = player.getInventory().getItemInMainHand();
 
         if (event.getAnimationType() == PlayerAnimationType.ARM_SWING && itemInHand.isSimilar(LightningStickCommand.LIGHTNING_STICK)) {
             Location location = player.getTargetBlock(null, 70).getLocation();
@@ -241,9 +274,17 @@ public class EventListeners implements Listener {
         }
     }
 
-    @EventHandler
-    public void itemDrop(PlayerDropItemEvent event) {
+    @EventHandler(priority=EventPriority.LOWEST)
+    public void drop(PlayerDropItemEvent event) {
         Player player = event.getPlayer();
+
+        if (WarCommand.isWarMode() || BuildCommand.isBuilding(player)) return;
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void moving(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
 
         if (WarCommand.isWarMode() || BuildCommand.isBuilding(player)) return;
         event.setCancelled(true);
@@ -273,7 +314,7 @@ public class EventListeners implements Listener {
         if (WarCommand.isWarMode()) WarCommand.giveWarModeItems(player);
     }
 
-    @EventHandler
+    @EventHandler(priority=EventPriority.LOWEST)
     public void teleport(PlayerTeleportEvent event) {
         Player player = event.getPlayer();
         if (event.getCause() != PlayerTeleportEvent.TeleportCause.ENDER_PEARL) return;
@@ -285,12 +326,23 @@ public class EventListeners implements Listener {
     }
 
     @EventHandler(priority=EventPriority.LOWEST)
-    public void onWeatherChangeEvent(WeatherChangeEvent event) {
+    public void day(TimeSkipEvent event) {
+        if (WarCommand.isWarMode()) return;
+
+        if (event.getSkipReason() == TimeSkipEvent.SkipReason.NIGHT_SKIP) event.setCancelled(true);
+    }
+
+    @EventHandler(priority=EventPriority.LOWEST)
+    public void weather(WeatherChangeEvent event) {
+        if (WarCommand.isWarMode()) return;
+
         if (event.toWeatherState()) event.setCancelled(true);
     }
 
     @EventHandler(priority=EventPriority.LOWEST)
-    public void onThunderChangeEvent(ThunderChangeEvent event) {
+    public void thunder(ThunderChangeEvent event) {
+        if (WarCommand.isWarMode()) return;
+
         if (event.toThunderState()) event.setCancelled(true);
     }
 
@@ -314,11 +366,14 @@ public class EventListeners implements Listener {
     }
 
     @EventHandler
-    public void targetEntity(EntityTargetLivingEntityEvent event) {
-        if (event.getTarget() instanceof Player player && (VanishManager.isInvisible(player) || GodCommand.isOn(player))) event.setCancelled(true);
-
-        if (WarCommand.isWarMode()) return;
-        event.setCancelled(true);
+    public void targetEntity(EntityTargetEvent event) {
+        if (
+            !(event.getTarget() instanceof Player player) ||
+            VanishManager.isInvisible(player) ||
+            GodCommand.isOn(player) ||
+            !WarCommand.isWarMode()
+        )
+            event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOW)

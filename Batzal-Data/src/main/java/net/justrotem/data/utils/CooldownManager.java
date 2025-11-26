@@ -33,10 +33,11 @@ public class CooldownManager {
     /**
      * Check if a player's cooldown has expired.
      */
-    public static <E extends Enum<E>> boolean isReady(Player player, E category) {
+    public static <E extends Enum<E> & CooldownType> boolean isReady(Player player, E category) {
         cleanupExpired(category);
 
-        if (player.hasPermission("batzal.admin")) return true;
+        String perm = category.getPermission();
+        if (perm != null && !perm.isEmpty() && player.hasPermission(perm)) return true;
 
         Map<Enum<?>, Map<UUID, Instant>> map = cooldowns.get(category.getDeclaringClass());
         if (map == null) return true;

@@ -2,6 +2,7 @@ package net.justrotem.lobby.commands;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import net.justrotem.lobby.hooks.LuckPermsManager;
 import net.justrotem.lobby.utils.TextUtils;
 import net.justrotem.lobby.utils.Utility;
 import org.bukkit.Bukkit;
@@ -45,6 +46,10 @@ public class BuildCommand implements BasicCommand {
         } else {
             GameMode gameMode = buildData.getGameMode();
             player.setGameMode(gameMode != null ? gameMode : Bukkit.getDefaultGameMode());
+            if (LuckPermsManager.hasPermission(player, "batzal.fly")) {
+                player.setAllowFlight(true);
+                player.setFlying(true);
+            }
         }
 
         ItemStack[] inventory = player.getInventory().getContents();
