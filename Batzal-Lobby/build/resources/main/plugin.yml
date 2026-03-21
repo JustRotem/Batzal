@@ -1,0 +1,13 @@
+name: Batzal-Lobby
+version: '1.0'
+main: net.justrotem.lobby.Main
+api-version: '1.21.8'
+libraries:
+  - com.zaxxer:HikariCP:7.0.2
+  - de.rapha149.signgui:signgui:2.5.4
+
+softdepend:
+  - LuckPerms
+  - PlaceholderAPI
+  - TAB
+  - DisplayTags

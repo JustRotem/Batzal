@@ -1,0 +1,7 @@
+{
+  "id": "batzalproxy",
+  "name": "Batzal-Proxy",
+  "version": "1.0.0",
+  "authors": ["JustRotem"],
+  "main": "net.justrotem.proxy.Main"
+}

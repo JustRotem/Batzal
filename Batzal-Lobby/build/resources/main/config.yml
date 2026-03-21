@@ -1,0 +1,18 @@
+nick:
+  ranks:
+    - default
+    - vip
+    - vip+
+    - mvp
+    - mvp+
+
+join-message: #lp group: "message"
+  mvp+: "%displayname% &6joined the lobby!"
+  mvp++: " &b>&c>&a> %displayname% &6joined the lobby! &a<&c<&b< "
+
+skins-file:
+  generate: false
+  load: false
+backup-world: "Backup World.zip"
+server-type: "Main"
+debug: false

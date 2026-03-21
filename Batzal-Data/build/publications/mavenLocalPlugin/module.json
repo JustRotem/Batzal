@@ -1,0 +1,69 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "net.justrotem",
+    "module": "Batzal-Data",
+    "version": "1.0.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.2.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "Batzal-Data-1.0.0.jar",
+          "url": "Batzal-Data-1.0.0.jar",
+          "size": 48311,
+          "sha512": "8821a98eab1c21c5ce818de3fec0fdcd1e51d75a92f2c8a360a31e8ff944c9dd7ed4372b38d2bee731fa940ab011e7a4d3809303dd726a687c25bef60db17273",
+          "sha256": "17039a666a685b120af2013078f37c8a7f4d532b1c4e13a419b81877d9276b02",
+          "sha1": "c74d9ff6549aecca73de7cf3b5baa014d2aba94c",
+          "md5": "153c016864503a9b76179285362e6335"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 21,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.json",
+          "module": "json",
+          "version": {
+            "requires": "20231013"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "Batzal-Data-1.0.0.jar",
+          "url": "Batzal-Data-1.0.0.jar",
+          "size": 48311,
+          "sha512": "8821a98eab1c21c5ce818de3fec0fdcd1e51d75a92f2c8a360a31e8ff944c9dd7ed4372b38d2bee731fa940ab011e7a4d3809303dd726a687c25bef60db17273",
+          "sha256": "17039a666a685b120af2013078f37c8a7f4d532b1c4e13a419b81877d9276b02",
+          "sha1": "c74d9ff6549aecca73de7cf3b5baa014d2aba94c",
+          "md5": "153c016864503a9b76179285362e6335"
+        }
+      ]
+    }
+  ]
+}
