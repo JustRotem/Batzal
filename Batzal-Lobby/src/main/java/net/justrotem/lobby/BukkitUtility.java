@@ -1,4 +1,4 @@
-package net.justrotem.data.bukkit;
+package net.justrotem.lobby;
 
 import org.bukkit.plugin.java.JavaPlugin;
 

@@ -5,7 +5,6 @@ import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
-import net.luckperms.api.model.user.UserManager;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.node.types.InheritanceNode;
 import net.luckperms.api.node.types.PrefixNode;
@@ -16,9 +15,9 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-// TODO REFACTOR: Avoid catching ignored in LuckPermsManager
-// TODO REFACTOR: Avoid blocking join() in LuckPermsManager where possible
-public class LuckPermsManager {
+// TODO REFACTOR: Avoid catching ignored in LuckPermsService
+// TODO REFACTOR: Avoid blocking join() in LuckPermsService where possible
+public class LuckPermsService {
 
     protected static LuckPerms api;
 
@@ -32,6 +31,26 @@ public class LuckPermsManager {
 
     public static boolean isHooked() {
         return api != null;
+    }
+
+    public static CompletableFuture<User> loadUser(UUID uuid) {
+        if (api == null) return CompletableFuture.failedFuture(new IllegalStateException("LuckPerms API is not initialized"));
+
+        if (uuid == null) return CompletableFuture.failedFuture(new IllegalArgumentException("UUID cannot be null"));
+
+        return api.getUserManager().loadUser(uuid);
+    }
+
+    public static User getUser(UUID uuid) {
+        if (api == null || uuid == null) return null;
+
+        try {
+            return loadUser(uuid).join();
+        } catch (Exception e) {
+            // TODO: Replace with proper logger
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static Group getGroup(String name) {
@@ -130,13 +149,6 @@ public class LuckPermsManager {
         return getLegacyGroupDisplayName(getPrimaryGroup(uuid));
     }
 
-    public static CompletableFuture<User> loadUser(UUID uuid) {
-        if (api == null) return CompletableFuture.failedFuture(new IllegalStateException("LuckPerms API is not initialized"));
-
-        UserManager userManager = api.getUserManager();
-        return userManager.loadUser(uuid);
-    }
-
     public static boolean isUserInherit(UUID uuid, String group) {
         if (api == null) return false;
 
@@ -214,80 +226,90 @@ public class LuckPermsManager {
     public static void addPrefix(UUID uuid, String prefix, int priority) {
         if (api == null) return;
 
-        try {
-            loadUser(uuid).thenAccept(user -> {
-                // Add new prefix with specified priority (higher number = higher priority)
-                PrefixNode node = PrefixNode.builder(prefix, priority).build();
-                user.data().add(node);
+        loadUser(uuid).thenAccept(user -> {
+            if (user == null) return;
 
-                // Save changes
-                api.getUserManager().saveUser(user);
-            });
-        } catch (NullPointerException ignored) {
-        }
+            PrefixNode node = PrefixNode.builder(prefix, priority).build();
+            user.data().add(node);
+
+            api.getUserManager().saveUser(user);
+        }).exceptionally(throwable -> {
+            // TODO: Replace with proper logger
+            throwable.printStackTrace();
+            return null;
+        });
     }
 
     public static void removePrefixes(UUID uuid, String prefix, int priority) {
         if (api == null) return;
 
-        try {
-            loadUser(uuid).thenAccept(user -> {
-                // Remove new prefix with specified priority (higher number = higher priority)
-                PrefixNode node = PrefixNode.builder(prefix, priority).build();
-                user.data().remove(node);
+        loadUser(uuid).thenAccept(user -> {
+            if (user == null) return;
 
-                // Save changes
-                api.getUserManager().saveUser(user);
-            });
-        } catch (NullPointerException ignored) {
-        }
+            PrefixNode node = PrefixNode.builder(prefix, priority).build();
+            user.data().remove(node);
+
+            api.getUserManager().saveUser(user);
+        }).exceptionally(throwable -> {
+            // TODO: Replace with proper logger
+            throwable.printStackTrace();
+            return null;
+        });
     }
 
     public static void removePrefixes(UUID uuid, int priority) {
         if (api == null) return;
 
-        try {
-            loadUser(uuid).thenAccept(user -> {
-                for (Node node : user.data().toCollection()) {
-                    if (node instanceof PrefixNode prefixNode) {
-                        if (prefixNode.getPriority() == priority) user.data().remove(node);
-                    }
-                }
+        loadUser(uuid).thenAccept(user -> {
+            if (user == null) return;
 
-                // Save changes
-                api.getUserManager().saveUser(user);
-            });
-        } catch (NullPointerException ignored) {
-        }
+            for (Node node : user.data().toCollection()) {
+                if (node instanceof PrefixNode prefixNode) {
+                    if (prefixNode.getPriority() == priority) user.data().remove(node);
+                }
+            }
+
+            api.getUserManager().saveUser(user);
+        }).exceptionally(throwable -> {
+            // TODO: Replace with proper logger
+            throwable.printStackTrace();
+            return null;
+        });
     }
 
     public void setPrimaryGroup(UUID uuid, String group) {
         if (api == null) return;
 
-        try {
-            loadUser(uuid).thenAccept(user -> {
-                user.setPrimaryGroup(group);
-                api.getUserManager().saveUser(user);
-            });
-        } catch (NullPointerException ignored) {
-        }
+        loadUser(uuid).thenAccept(user -> {
+            if (user == null) return;
+
+            user.setPrimaryGroup(group);
+            api.getUserManager().saveUser(user);
+        }).exceptionally(throwable -> {
+            // TODO: Replace with proper logger
+            throwable.printStackTrace();
+            return null;
+        });
     }
 
     public static void addGroup(UUID uuid, String group) {
         if (api == null) return;
 
-        try {
-            loadUser(uuid).thenAccept(user -> {
-                Group g = getGroup(group);
-                if (g == null) return;
+        loadUser(uuid).thenAccept(user -> {
+            if (user == null) return;
 
-                Node node = InheritanceNode.builder(g).build();
-                user.data().add(node);
+            Group g = getGroup(group);
+            if (g == null) return;
 
-                api.getUserManager().saveUser(user);
-            });
-        } catch (NullPointerException ignored) {
-        }
+            Node node = InheritanceNode.builder(g).build();
+            user.data().add(node);
+
+            api.getUserManager().saveUser(user);
+        }).exceptionally(throwable -> {
+            // TODO: Replace with proper logger
+            throwable.printStackTrace();
+            return null;
+        });
     }
 
     public static void addGroupTemporary(UUID uuid, String group, Duration duration) {
@@ -295,10 +317,16 @@ public class LuckPermsManager {
 
         try {
             loadUser(uuid).thenAccept(user -> {
-                Node node = InheritanceNode.builder(group).expiry(duration).build();
+                if (user == null) return;
 
+                Node node = InheritanceNode.builder(group).expiry(duration).build();
                 user.data().add(node);
+
                 api.getUserManager().saveUser(user);
+            }).exceptionally(throwable -> {
+                // TODO: Replace with proper logger
+                throwable.printStackTrace();
+                return null;
             });
         } catch (NullPointerException ignored) {
         }
@@ -309,9 +337,16 @@ public class LuckPermsManager {
 
         try {
             loadUser(uuid).thenAccept(user -> {
+                if (user == null) return;
+
                 Node node = InheritanceNode.builder(group).build();
                 user.data().remove(node);
+
                 api.getUserManager().saveUser(user);
+            }).exceptionally(throwable -> {
+                // TODO: Replace with proper logger
+                throwable.printStackTrace();
+                return null;
             });
         } catch (NullPointerException ignored) {
         }
@@ -320,40 +355,32 @@ public class LuckPermsManager {
     public static void clearGroups(UUID uuid) {
         if (api == null) return;
 
-        try {
-            loadUser(uuid).thenAccept(user -> {
-                // remove any inheritance node
-                user.data().clear(node -> node instanceof InheritanceNode);
-                api.getUserManager().saveUser(user);
-            });
-        } catch (NullPointerException ignored) {
-        }
+        loadUser(uuid).thenAccept(user -> {
+            if (user == null) return;
+
+            user.data().clear(node -> node instanceof InheritanceNode);
+            api.getUserManager().saveUser(user);
+        }).exceptionally(throwable -> {
+            // TODO: Replace with proper logger
+            throwable.printStackTrace();
+            return null;
+        });
     }
 
     public static boolean hasPermission(Group group, String permission) {
         if (api == null) return false;
+        if (group == null) return false;
+        if (permission == null || permission.isEmpty()) return true;
 
-        try {
-            if (group == null) return false;
-            if (permission == null || permission.isEmpty()) return true;
-
-            return group.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
-        } catch (Exception e) {
-            return false;
-        }
+        return group.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
     }
 
     public static boolean hasPermission(UUID uuid, String permission) {
-        if (api == null) return false;
+        if (permission == null || permission.isEmpty()) return true;
 
-        try {
-            if (uuid == null) return false;
-            if (permission == null || permission.isEmpty()) return true;
+        User user =  getUser(uuid);
+        if (user == null) return false;
 
-            return loadUser(uuid).join().getCachedData().getPermissionData().checkPermission(permission).asBoolean();
-        } catch (NullPointerException ignored) {
-        }
-
-        return false;
+        return user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
     }
 }

@@ -3,7 +3,7 @@ package net.justrotem.lobby.utils;
 import net.justrotem.data.player.PlayerManager;
 import net.justrotem.data.player.PlayerData;
 import net.justrotem.data.bukkit.SkinData;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.skins.SkinManager;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Color;

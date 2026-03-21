@@ -2,8 +2,8 @@ package net.justrotem.lobby.commands;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.data.utils.CooldownManager;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.CooldownManager;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.Main;
 import net.justrotem.lobby.hooks.PlayerManager;
 import net.justrotem.lobby.utils.PlayerUtility;

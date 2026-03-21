@@ -1,6 +1,6 @@
 package net.justrotem.lobby.nick;
 
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.Main;
 import net.justrotem.lobby.commands.FlyCommand;
 import net.justrotem.lobby.hooks.LuckPermsManager;

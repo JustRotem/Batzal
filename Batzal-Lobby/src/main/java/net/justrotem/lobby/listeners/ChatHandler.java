@@ -3,7 +3,7 @@ package net.justrotem.lobby.listeners;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.event.player.AsyncChatEvent;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.Main;
 import net.justrotem.lobby.hooks.LuckPermsManager;
 import net.justrotem.lobby.hooks.PlayerManager;

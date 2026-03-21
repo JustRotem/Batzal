@@ -1,4 +1,4 @@
-package net.justrotem.data.util;
+package net.justrotem.lobby.utils;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class TextUtility {
+public class ClickUtility {
 
     private static final Map<UUID, Map<String, Runnable>> ACTIONS = new HashMap<>();
     private static final AtomicInteger UNIQUE_ID = new AtomicInteger(0);
@@ -30,6 +30,6 @@ public class TextUtility {
     }
 
     public static Component clickable(String label, UUID uuid, String hoverText, Runnable action) {
-        return clickable(TextUtility.color(label), uuid, TextUtility.color(hoverText), action);
+        return clickable(ClickUtility.color(label), uuid, ClickUtility.color(hoverText), action);
     }
 }

@@ -4,7 +4,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.justrotem.data.player.PlayerData;
 import net.justrotem.data.sql.DataServiceShutdownController;
 import net.justrotem.data.bukkit.BukkitUtility;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.hooks.LuckPermsManager;
 import net.justrotem.lobby.hooks.PlayerManager;
 import net.justrotem.lobby.nick.NickManager;

@@ -1,7 +1,9 @@
 package net.justrotem.lobby.listeners;
 
-import net.justrotem.data.utils.CooldownManager;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.cache.CooldownManager;
+import net.justrotem.data.util.CooldownManager;
+import net.justrotem.data.util.TextFormatter;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.Main;
 import net.justrotem.lobby.commands.*;
 import net.justrotem.lobby.hooks.LuckPermsManager;
@@ -107,7 +109,7 @@ public class EventListeners implements Listener {
         if (!LuckPermsManager.hasPermission(target, "batzal.punch.punched")) return;
 
         if (!CooldownManager.isReady(player.getUniqueId(), Main.CooldownCategory.Punch)) {
-            player.sendMessage(TextUtility.color("&cYou have to wait %cooldown% more seconds!".replace("%cooldown%", String.valueOf(CooldownManager.getRemaining(player.getUniqueId(), Main.CooldownCategory.Punch)))));
+            player.sendMessage(TextFormatter.color("&cYou have to wait %cooldown% more seconds!".replace("%cooldown%", String.valueOf(CooldownManager.getRemaining(player.getUniqueId(), Main.CooldownCategory.Punch)))));
             return;
         }
 

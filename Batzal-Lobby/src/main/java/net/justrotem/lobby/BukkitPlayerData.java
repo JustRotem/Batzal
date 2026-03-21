@@ -1,7 +1,6 @@
-package net.justrotem.data.player;
+package net.justrotem.lobby;
 
 import com.destroystokyo.paper.profile.ProfileProperty;
-import net.justrotem.data.bukkit.RankColor;
 import net.justrotem.data.enums.MessageMode;
 import net.justrotem.data.enums.PunchMessage;
 import net.justrotem.data.enums.Status;

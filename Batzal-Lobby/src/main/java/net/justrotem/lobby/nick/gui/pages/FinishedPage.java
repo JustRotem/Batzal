@@ -1,6 +1,6 @@
 package net.justrotem.lobby.nick.gui.pages;
 
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.Main;
 import net.justrotem.lobby.nick.NickManager;
 import net.justrotem.lobby.nick.gui.BookGUI;

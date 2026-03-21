@@ -2,7 +2,7 @@ package net.justrotem.lobby.utils;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.hooks.PlayerManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

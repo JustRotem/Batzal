@@ -1,10 +1,6 @@
-package net.justrotem.data.player;
+package net.justrotem.data.model;
 
-import net.justrotem.data.bukkit.RankColor;
-import net.justrotem.data.data.MessageMode;
-import net.justrotem.data.data.PunchMessage;
-import net.justrotem.data.data.Status;
-import net.justrotem.data.data.Visibility;
+import net.justrotem.data.enums.*;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package net.justrotem.data.sql;
+package net.justrotem.data.service;
 
 import java.util.Collections;
 import java.util.HashSet;

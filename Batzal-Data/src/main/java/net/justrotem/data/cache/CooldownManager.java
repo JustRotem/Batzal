@@ -1,10 +1,14 @@
-package net.justrotem.data.utils;
+package net.justrotem.data.cache;
 
-import net.justrotem.data.hooks.LuckPermsManager;
+import net.justrotem.data.integration.luckperms.LuckPermsService;
+import net.justrotem.data.model.CooldownType;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CooldownManager {
@@ -36,8 +40,7 @@ public class CooldownManager {
     public static <E extends Enum<E> & CooldownType> boolean isReady(UUID uuid, E category) {
         cleanupExpired(category);
 
-        String perm = category.getPermission();
-        if (perm != null && !perm.isEmpty() && LuckPermsManager.hasPermission(uuid, perm)) return true;
+        if (hasBypass(uuid, category)) return true;
 
         Map<Enum<?>, Map<UUID, Instant>> map = cooldowns.get(category.getDeclaringClass());
         if (map == null) return true;
@@ -47,6 +50,11 @@ public class CooldownManager {
 
         Instant expiresAt = playerMap.get(uuid);
         return expiresAt == null || Instant.now().isAfter(expiresAt);
+    }
+
+    private static <E extends Enum<E> & CooldownType> boolean hasBypass(UUID uuid, E category) {
+        String perm = category.getPermission();
+        return perm != null && !perm.isEmpty() && LuckPermsService.hasPermission(uuid, perm);
     }
 
     /**

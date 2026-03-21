@@ -1,4 +1,4 @@
-package net.justrotem.data.player;
+package net.justrotem.proxy;
 
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.util.GameProfile;

@@ -2,7 +2,7 @@ package net.justrotem.lobby.nick.gui;
 
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.exception.SignGUIVersionException;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.hooks.PlayerManager;
 import net.justrotem.lobby.nick.NickManager;
 import net.kyori.adventure.text.Component;

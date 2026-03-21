@@ -2,7 +2,7 @@ package net.justrotem.lobby.skins;
 
 import net.justrotem.data.bukkit.SkinData;
 import net.justrotem.data.sql.SkinDataManager;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.Main;
 import net.justrotem.lobby.nick.NickManager;
 import net.justrotem.lobby.sql.MySQL;

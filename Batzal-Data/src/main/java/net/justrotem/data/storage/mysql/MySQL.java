@@ -1,8 +1,5 @@
-package net.justrotem.data.sql;
+package net.justrotem.data.storage.mysql;
 
-import net.justrotem.data.storage.mysql.MySQLManager;
-import net.justrotem.data.storage.mysql.PlayerDataManager;
-import net.justrotem.data.storage.mysql.SkinDataManager;
 import org.slf4j.Logger;
 
 public abstract class MySQL {
@@ -36,5 +33,5 @@ public abstract class MySQL {
         return skinData;
     }
 
-    public abstract MySQLManager generateConfig(boolean debug, Logger logger);
+    public abstract MySQLManager buildManager(boolean debug, Logger logger);
 }

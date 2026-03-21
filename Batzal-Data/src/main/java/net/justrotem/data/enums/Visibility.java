@@ -1,4 +1,4 @@
-package net.justrotem.data.data;
+package net.justrotem.data.enums;
 
 import net.justrotem.data.cache.PlayerManager;
 

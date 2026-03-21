@@ -1,4 +1,4 @@
-package net.justrotem.data.player;
+package net.justrotem.lobby;
 
 import net.justrotem.data.cache.PlayerManager;
 import net.justrotem.data.cache.LuckPermsManager;
@@ -14,19 +14,19 @@ import java.util.*;
 public class BukkitPlayerManager extends PlayerManager {
 
     public static void register(Player player) {
-        PlayerData playerData = get(player.getUniqueId());
+        PlayerData playerData = PlayerManager.get(player.getUniqueId());
         if (playerData == null) playerData = BukkitPlayerData.create(player);
 
-        update(BukkitPlayerData.checkForUpdates(player, playerData));
+        PlayerManager.update(BukkitPlayerData.checkForUpdates(player, playerData));
     }
 
     public static void startAutoSave(JavaPlugin plugin) {
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-            for (UUID uuid : CACHE.keySet()) {
-                PlayerData playerData = CACHE.get(uuid);
+            for (UUID uuid : PlayerManager.CACHE.keySet()) {
+                PlayerData playerData = PlayerManager.CACHE.get(uuid);
                 if (!playerData.isDirty()) continue;
 
-                sql.update(playerData);
+                PlayerManager.sql.update(playerData);
                 playerData.setDirty(false);
             }
         }, 0, 20 * 30); // every 30 seconds
@@ -43,7 +43,7 @@ public class BukkitPlayerManager extends PlayerManager {
     }
 
     public static boolean isRegistered(String name) {
-        return isRegistered(getUniqueId(name));
+        return PlayerManager.isRegistered(getUniqueId(name));
     }
 
     public static UUID getUniqueId(String name) {
@@ -51,7 +51,7 @@ public class BukkitPlayerManager extends PlayerManager {
             try {
                 return Objects.requireNonNull(Arrays.stream(Bukkit.getOfflinePlayers()).filter(p -> p.getName() != null && p.getName().equalsIgnoreCase(name)).findFirst().orElse(null)).getUniqueId();
             } catch (NoSuchElementException | NullPointerException e) {
-                return Objects.requireNonNull(CACHE.values().stream().filter(playerData -> playerData.getName().equalsIgnoreCase(name)).findFirst().orElse(null)).getUniqueId();
+                return Objects.requireNonNull(PlayerManager.CACHE.values().stream().filter(playerData -> playerData.getName().equalsIgnoreCase(name)).findFirst().orElse(null)).getUniqueId();
             }
         } catch (NullPointerException e) {
             return null;
@@ -60,7 +60,7 @@ public class BukkitPlayerManager extends PlayerManager {
 
     public static String getName(String name) {
         try {
-            return Objects.requireNonNull(getName(getUniqueId(name)));
+            return Objects.requireNonNull(PlayerManager.getName(getUniqueId(name)));
         } catch (NullPointerException e) {
             return null;
         }
@@ -71,7 +71,7 @@ public class BukkitPlayerManager extends PlayerManager {
     }
 
     public static String getLegacyRealDisplayName(UUID uuid) {
-        return LuckPermsManager.getLegacyGroupPrefix(LuckPermsManager.getPrimaryGroup(uuid)) + getName(uuid);
+        return LuckPermsManager.getLegacyGroupPrefix(LuckPermsManager.getPrimaryGroup(uuid)) + PlayerManager.getName(uuid);
     }
 
     public static String getLegacyRealDisplayName(Player player) {

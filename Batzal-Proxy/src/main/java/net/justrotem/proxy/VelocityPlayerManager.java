@@ -1,11 +1,11 @@
-package net.justrotem.data.player;
+package net.justrotem.proxy;
 
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.justrotem.data.cache.PlayerManager;
-import net.justrotem.data.cache.LuckPermsManager;
+import net.justrotem.data.integration.luckperms.LuckPermsService;
 import net.justrotem.data.model.PlayerData;
-import net.justrotem.data.util.TextUtility;
+import net.justrotem.data.util.ClickUtility;
 import net.kyori.adventure.text.Component;
 
 import java.util.UUID;
@@ -38,15 +38,15 @@ public class VelocityPlayerManager extends PlayerManager {
     }
 
     public static Component getDisplayName(Player player) {
-        return LuckPermsManager.getPrefix(player.getUniqueId()).append(TextUtility.color(player.getUsername()));
+        return LuckPermsService.getPrefix(player.getUniqueId()).append(ClickUtility.color(player.getUsername()));
     }
 
     public static String getLegacyDisplayName(UUID uuid) {
-        return LuckPermsManager.getLegacyGroupPrefix(LuckPermsManager.getPrimaryGroup(uuid)) + getName(uuid);
+        return LuckPermsService.getLegacyGroupPrefix(LuckPermsService.getPrimaryGroup(uuid)) + getName(uuid);
     }
 
     public static String getPrefixColor(UUID uuid) {
-        String prefix = LuckPermsManager.getLegacyPrefix(uuid);
+        String prefix = LuckPermsService.getLegacyPrefix(uuid);
 
         return prefix.substring(prefix.length() - 2);
     }

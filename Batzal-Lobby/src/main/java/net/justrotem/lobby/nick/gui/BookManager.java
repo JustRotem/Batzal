@@ -1,6 +1,6 @@
 package net.justrotem.lobby.nick.gui;
 
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.nick.gui.pages.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;

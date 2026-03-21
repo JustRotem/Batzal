@@ -2,8 +2,8 @@ package net.justrotem.proxy.sql;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import net.justrotem.data.sql.DataServiceShutdownController;
-import net.justrotem.data.sql.MySQLManager;
+import net.justrotem.data.service.DataServiceShutdownController;
+import net.justrotem.data.storage.mysql.MySQLManager;
 import net.justrotem.proxy.FriendData;
 
 import java.sql.Connection;

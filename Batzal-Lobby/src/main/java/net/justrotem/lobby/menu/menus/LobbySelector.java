@@ -1,6 +1,6 @@
 package net.justrotem.lobby.menu.menus;
 
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.hooks.PlayerManager;
 import net.justrotem.lobby.menu.Menu;
 import net.justrotem.lobby.menu.PlayerMenuUtility;

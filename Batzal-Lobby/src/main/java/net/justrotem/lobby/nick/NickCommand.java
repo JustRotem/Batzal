@@ -2,7 +2,7 @@ package net.justrotem.lobby.nick;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.Main;
 import net.justrotem.lobby.hooks.LuckPermsManager;
 import net.justrotem.lobby.nick.gui.BookManager;

@@ -1,6 +1,7 @@
-package net.justrotem.data.sql;
+package net.justrotem.data.storage.mysql;
 
-import net.justrotem.data.bukkit.SkinData;
+import net.justrotem.data.model.SkinData;
+import net.justrotem.data.service.DataServiceShutdownController;
 
 import java.sql.*;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package net.justrotem.data.utils;
+package net.justrotem.data.cache;
 
 import java.util.HashMap;
 import java.util.List;

@@ -1,7 +1,7 @@
 package net.justrotem.lobby.listeners;
 
-import net.justrotem.data.utils.CooldownManager;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.CooldownManager;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.Main;
 import net.justrotem.lobby.menu.MenuManager;
 import net.justrotem.lobby.menu.menus.GameMenu;

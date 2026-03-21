@@ -1,7 +1,7 @@
 package net.justrotem.lobby.menu.menus;
 
 import net.justrotem.data.data.PunchMessage;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.TextUtility;
 import net.justrotem.lobby.hooks.PlayerManager;
 import net.justrotem.lobby.menu.Menu;
 import net.justrotem.lobby.menu.MenuManager;
@@ -9,7 +9,6 @@ import net.justrotem.lobby.menu.PlayerMenuUtility;
 import net.justrotem.lobby.utils.ItemUtility;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 

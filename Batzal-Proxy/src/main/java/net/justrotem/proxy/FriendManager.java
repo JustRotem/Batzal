@@ -1,6 +1,6 @@
 package net.justrotem.proxy;
 
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.ClickUtility;
 import net.justrotem.proxy.sql.FriendDataManager;
 import net.justrotem.proxy.sql.MySQL;
 import net.kyori.adventure.text.Component;
@@ -12,8 +12,8 @@ import java.util.concurrent.CancellationException;
 
 public class FriendManager {
 
-    public static final Component UP_HYPHEN = TextUtility.color("&9&m---------------------------------------------\n");
-    public static final Component DOWN_HYPHEN = TextUtility.color("\n&9&m---------------------------------------------");
+    public static final Component UP_HYPHEN = ClickUtility.color("&9&m---------------------------------------------\n");
+    public static final Component DOWN_HYPHEN = ClickUtility.color("\n&9&m---------------------------------------------");
 
     static final HashMap<UUID, FriendData> CACHE = new HashMap<>();
     static final FriendDataManager sql = MySQL.getFriendData();

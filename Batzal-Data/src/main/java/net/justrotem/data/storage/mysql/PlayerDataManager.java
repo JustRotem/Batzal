@@ -1,8 +1,8 @@
-package net.justrotem.data.sql;
+package net.justrotem.data.storage.mysql;
 
-import net.justrotem.data.player.PlayerData;
-import net.justrotem.data.bukkit.RankColor;
-import net.justrotem.data.data.*;
+import net.justrotem.data.enums.*;
+import net.justrotem.data.model.PlayerData;
+import net.justrotem.data.service.DataServiceShutdownController;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

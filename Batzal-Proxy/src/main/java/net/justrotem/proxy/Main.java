@@ -17,9 +17,7 @@ import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings;
 import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
 import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings;
 import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings;
-import net.justrotem.data.hooks.VelocityLuckPermsManager;
-import net.justrotem.data.player.VelocityPlayerManager;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.util.ClickUtility;
 import net.justrotem.proxy.sql.MySQL;
 import net.justrotem.proxy.utils.LobbyManager;
 import net.luckperms.api.LuckPerms;
@@ -128,7 +126,7 @@ public class Main {
 
             if (!requests.isEmpty()) {
                 player.sendMessage(FriendManager.UP_HYPHEN
-                        .append(TextUtility.clickable("&aYou have %requests% pending friend requests.\n&eUse &b/f requests &eto see them!"
+                        .append(ClickUtility.clickable("&aYou have %requests% pending friend requests.\n&eUse &b/f requests &eto see them!"
                                 .replace("%requests%", String.valueOf(requests.size())), player.getUniqueId(), "&eClick to see &brequests&e!", () -> {
                     // Open friend requests..
                 })).append(FriendManager.DOWN_HYPHEN));
@@ -137,7 +135,7 @@ public class Main {
             for (Player target : friendData.getOnlineFriends()) {
                 if (VanishManager.canSee(target, player)) {
                     if (FriendManager.get(target.getUniqueId()).isEnabledNotifications())
-                        target.sendMessage(TextUtility.color("&aFriend > " + VelocityPlayerManager.getColoredName(player.getUniqueId()) + " &ejoined."));
+                        target.sendMessage(ClickUtility.color("&aFriend > " + VelocityPlayerManager.getColoredName(player.getUniqueId()) + " &ejoined."));
                 }
             }
         }
@@ -153,7 +151,7 @@ public class Main {
         for (Player target : friendData.getOnlineFriends()) {
             if (VanishManager.canSee(target, player)) {
                 if (FriendManager.get(target.getUniqueId()).isEnabledNotifications())
-                    target.sendMessage(TextUtility.color("&aFriend > " + VelocityPlayerManager.getColoredName(player.getUniqueId()) + " &eleft."));
+                    target.sendMessage(ClickUtility.color("&aFriend > " + VelocityPlayerManager.getColoredName(player.getUniqueId()) + " &eleft."));
             }
         }
     }

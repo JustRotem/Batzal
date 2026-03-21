@@ -1,6 +1,5 @@
-package net.justrotem.data.hooks;
+package net.justrotem.lobby;
 
-import net.justrotem.data.bukkit.BukkitUtility;
 import net.justrotem.data.cache.LuckPermsManager;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
@@ -15,7 +14,7 @@ public class BukkitLuckPermsManager extends LuckPermsManager {
 
         if (lpPlugin != null && lpPlugin.isEnabled()) {
             try {
-                initializeAPI(LuckPermsProvider.get()); // get LuckPerms API
+                LuckPermsManager.initializeAPI(LuckPermsProvider.get()); // get LuckPerms API
                 if (BukkitUtility.isDebug(plugin)) plugin.getLogger().info("LuckPerms detected and initialized!");
             } catch (IllegalStateException e) {
                 if (BukkitUtility.isDebug(plugin)) plugin.getLogger().warning("LuckPerms plugin is present but API could not be loaded.");
@@ -26,9 +25,9 @@ public class BukkitLuckPermsManager extends LuckPermsManager {
     }
 
     public static User getUser(Player player) {
-        if (api == null) return null;
+        if (LuckPermsManager.api == null) return null;
 
-        return api.getPlayerAdapter(Player.class).getUser(player);
+        return LuckPermsManager.api.getPlayerAdapter(Player.class).getUser(player);
     }
 
     public static String getPrimaryGroup(Player player) {

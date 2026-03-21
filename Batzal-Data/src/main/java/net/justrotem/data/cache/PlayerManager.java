@@ -1,9 +1,10 @@
-package net.justrotem.data.player;
+package net.justrotem.data.cache;
 
-import net.justrotem.data.hooks.BukkitLuckPermsManager;
-import net.justrotem.data.sql.MySQL;
-import net.justrotem.data.sql.PlayerDataManager;
-import net.justrotem.data.utils.TextUtility;
+import net.justrotem.data.integration.luckperms.LuckPermsService;
+import net.justrotem.data.model.PlayerData;
+import net.justrotem.data.storage.mysql.MySQL;
+import net.justrotem.data.storage.mysql.PlayerDataManager;
+import net.justrotem.data.util.TextFormatter;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -98,14 +99,14 @@ public class PlayerManager {
     }
 
     public static boolean isSameMessage(@NotNull UUID uuid, Component message) {
-        if (BukkitLuckPermsManager.hasPermission(uuid, "batzal.chat.samemessage")) return false;
+        if (LuckPermsService.hasPermission(uuid, "batzal.chat.samemessage")) return false;
 
         if (!LAST_MESSAGES.containsKey(uuid)) {
             setLastMessage(uuid, message);
             return false;
         }
 
-        return TextUtility.getText(message).equals(TextUtility.getText(LAST_MESSAGES.get(uuid)));
+        return TextFormatter.getText(message).equals(TextFormatter.getText(LAST_MESSAGES.get(uuid)));
     }
 
     public static void setLastMessage(UUID uuid, Component message) {
@@ -113,9 +114,9 @@ public class PlayerManager {
     }
 
     public static boolean isAdvertising(@NotNull UUID uuid, Component message) {
-        if (BukkitLuckPermsManager.hasPermission(uuid, "batzal.chat.advertisement")) return false;
+        if (LuckPermsService.hasPermission(uuid, "batzal.chat.advertisement")) return false;
 
-        String text = TextUtility.getText(message).toLowerCase();
+        String text = TextFormatter.getText(message).toLowerCase();
         return text.contains("http") || text.contains("www.");
     }
 

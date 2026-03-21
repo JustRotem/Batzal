@@ -1,13 +1,12 @@
 package net.justrotem.proxy;
 
 import com.velocitypowered.api.proxy.Player;
-import net.justrotem.data.player.PlayerData;
-import net.justrotem.data.player.VelocityPlayerManager;
+import net.justrotem.data.model.PlayerData;
 
 import java.util.List;
 import java.util.UUID;
 
-public class VanishManager extends net.justrotem.data.VanishManager {
+public class VanishManager extends net.justrotem.data.cache.VanishManager {
 
     public static boolean isInvisible(Player player) {
         return isInvisible(player.getUniqueId());

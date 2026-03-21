@@ -1,12 +1,12 @@
-package net.justrotem.data.hooks;
+package net.justrotem.proxy;
 
 import com.velocitypowered.api.proxy.Player;
-import net.justrotem.data.cache.LuckPermsManager;
+import net.justrotem.data.integration.luckperms.LuckPermsService;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.user.User;
 import org.slf4j.Logger;
 
-public class VelocityLuckPermsManager extends LuckPermsManager {
+public class VelocityLuckPermsManager extends LuckPermsService {
 
     public static void init(Logger log, LuckPerms lp, boolean debug) {
         if (lp != null) {

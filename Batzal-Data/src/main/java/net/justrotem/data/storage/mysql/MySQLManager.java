@@ -1,7 +1,8 @@
-package net.justrotem.data.sql;
+package net.justrotem.data.storage.mysql;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import net.justrotem.data.service.DataServiceShutdownController;
 import org.slf4j.Logger;
 
 import java.sql.Connection;

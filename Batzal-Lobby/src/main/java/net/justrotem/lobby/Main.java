@@ -1,6 +1,6 @@
 package net.justrotem.lobby;
 
-import net.justrotem.data.utils.CooldownType;
+import net.justrotem.data.model.CooldownType;
 import net.justrotem.lobby.commands.*;
 import net.justrotem.lobby.hooks.NickExpansion;
 import net.justrotem.lobby.listeners.ActionBarManager;

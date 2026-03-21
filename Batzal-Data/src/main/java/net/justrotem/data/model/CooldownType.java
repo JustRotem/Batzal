@@ -1,4 +1,4 @@
-package net.justrotem.data.enums;
+package net.justrotem.data.model;
 
 public interface CooldownType {
     String getPermission();

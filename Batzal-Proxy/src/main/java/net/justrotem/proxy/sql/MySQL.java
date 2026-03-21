@@ -3,7 +3,7 @@ package net.justrotem.proxy.sql;
 import com.velocitypowered.api.plugin.PluginContainer;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
-import net.justrotem.data.sql.MySQLManager;
+import net.justrotem.data.storage.mysql.MySQLManager;
 import net.justrotem.proxy.Main;
 import org.slf4j.Logger;
 
@@ -11,13 +11,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
-public class MySQL extends net.justrotem.data.sql.MySQL {
+public class MySQL extends net.justrotem.data.storage.mysql.MySQL {
 
     private static FriendDataManager friendData;
 
     public static void connect(Main plugin) {
         MySQLManager mySQL = new MySQL().generateConfig(plugin.isDebug(), plugin.getLogger());
-        net.justrotem.data.sql.MySQL.connect(mySQL);
+        net.justrotem.data.storage.mysql.MySQL.connect(mySQL);
         friendData = new FriendDataManager(mySQL);
     }
 

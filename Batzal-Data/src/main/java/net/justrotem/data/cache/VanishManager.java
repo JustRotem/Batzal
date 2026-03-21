@@ -1,7 +1,6 @@
-package net.justrotem.data;
+package net.justrotem.data.cache;
 
-import net.justrotem.data.player.PlayerData;
-import net.justrotem.data.player.PlayerManager;
+import net.justrotem.data.model.PlayerData;
 
 import java.util.List;
 import java.util.UUID;

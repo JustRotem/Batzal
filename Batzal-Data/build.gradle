@@ -1,6 +1,5 @@
 plugins {
-    id 'java'
-    id "xyz.jpenilla.run-paper" version "2.3.1"
+    id 'java-library'
     id 'maven-publish'
 }
 
@@ -10,34 +9,27 @@ version = '1.0.0'
 repositories {
     mavenCentral()
     mavenLocal()
-
-    maven {
-        name = "papermc-repo"
-        url = "https://repo.papermc.io/repository/maven-public/"
-    }
-    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
 }
 
 dependencies {
-    // Paper API
-    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
-
-    // Velocity API
-    compileOnly 'com.velocitypowered:velocity-api:3.5.0-SNAPSHOT'
-    annotationProcessor 'com.velocitypowered:velocity-api:3.5.0-SNAPSHOT'
-
-    // LuckPerms API (provided by server)
+    // LuckPerms API
     compileOnly 'net.luckperms:api:5.5'
 
-    // JSON (for configs or API parsing)
+    // JSON
     implementation 'org.json:json:20231013'
 
-    // HikariCP for database pooling
-    compileOnly 'com.zaxxer:HikariCP:7.0.2'
+    // HikariCP
+    implementation 'com.zaxxer:HikariCP:7.0.2'
+
+    // Adventure
+    api 'net.kyori:adventure-api:4.26.1'
+    api 'net.kyori:adventure-text-minimessage:4.26.1'
+    api 'net.kyori:adventure-text-serializer-plain:4.26.1'
 }
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -46,7 +38,7 @@ tasks.withType(JavaCompile).configureEach {
 
 publishing {
     publications {
-        mavenLocalPlugin(MavenPublication) {
+        mavenJava(MavenPublication) {
             from components.java
         }
     }
