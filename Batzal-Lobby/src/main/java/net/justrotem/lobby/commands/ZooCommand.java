@@ -2,16 +2,16 @@ package net.justrotem.lobby.commands;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.lobby.utils.TextUtils;
-import net.justrotem.lobby.utils.Utility;
+import net.justrotem.data.utils.TextUtility;
+import net.justrotem.lobby.utils.PlayerUtility;
 import org.bukkit.entity.Player;
 
 public class ZooCommand implements BasicCommand {
     @Override
     public void execute(CommandSourceStack source, String[] args) {
-        if (Utility.isConsole(source)) return;
+        if (PlayerUtility.isConsole(source)) return;
         Player player = (Player) source.getSender();
 
-        player.sendMessage(TextUtils.color("&6This isn't the Zoo, it's the lobby!"));
+        player.sendMessage(TextUtility.color("&6This isn't the Zoo, it's the lobby!"));
     }
 }

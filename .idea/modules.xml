@@ -3,12 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Batzal.iml" filepath="$PROJECT_DIR$/.idea/Batzal.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Batzal-Data.iml" filepath="$PROJECT_DIR$/.idea/modules/Batzal-Data.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Batzal-Data.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Batzal-Data.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Batzal-Data.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Batzal-Data.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Batzal-Lobby.iml" filepath="$PROJECT_DIR$/.idea/modules/Batzal-Lobby.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Batzal-Lobby.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Batzal-Lobby.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Batzal-Lobby.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Batzal-Lobby.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Batzal-Proxy.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Batzal-Proxy.main.iml" />
     </modules>
   </component>
 </project>

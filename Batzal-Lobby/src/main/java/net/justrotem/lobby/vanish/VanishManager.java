@@ -1,8 +1,8 @@
 package net.justrotem.lobby.vanish;
 
-import net.justrotem.data.PlayerData;
-import net.justrotem.data.PlayerManager;
+import net.justrotem.data.player.PlayerData;
 import net.justrotem.lobby.Main;
+import net.justrotem.lobby.hooks.PlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -11,14 +11,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public class VanishManager {
+public class VanishManager extends net.justrotem.data.VanishManager {
 
     private static void setVanished(Player player, boolean vanished) {
-        PlayerManager.updatePlayer(player, PlayerManager.getData(player).setVanished(vanished));
-    }
-
-    public static boolean isInvisible(Player player) {
-        return PlayerManager.getData(player).isVanished();
+        PlayerManager.get(player.getUniqueId()).setVanished(vanished);
     }
 
     public static void hidePlayer(Player viewed) {
@@ -38,11 +34,12 @@ public class VanishManager {
                 .forEach(viewer -> viewer.showPlayer(Main.getInstance(), viewed));
     }
 
-    public static boolean canSee(CommandSender viewer, Player viewed) {
-        if (viewer.hasPermission("batzal.vanish.see")) return true;
-        if (viewed != null) return !isInvisible(viewed);
+    public static boolean isInvisible(Player player) {
+        return isInvisible(player.getUniqueId());
+    }
 
-        return false;
+    public static boolean canSee(CommandSender viewer, Player viewed) {
+        return canSee(!(viewer instanceof Player player) || player.hasPermission("batzal.vanish.see"), viewed != null ? viewed.getUniqueId() : null);
     }
 
     public static boolean canSee(CommandSender viewer) {
@@ -50,7 +47,7 @@ public class VanishManager {
     }
 
     public static List<UUID> getAllVanishedPlayers() {
-        return PlayerManager.getAllPlayers().stream().filter(PlayerData::isVanished).map(PlayerData::getUniqueId).toList();
+        return PlayerManager.getAll().stream().filter(PlayerData::isVanished).map(PlayerData::getUniqueId).toList();
     }
 
     public static List<Player> getOnlineVanishedPlayers() {
@@ -61,7 +58,12 @@ public class VanishManager {
         return getAllVanishedPlayers().stream().filter(uuid -> Bukkit.getPlayer(uuid) == null).toList();
     }
 
-    public static void updateVanishedPlayers() {
-        getOnlineVanishedPlayers().forEach(VanishManager::hidePlayer);
+    public static void updateVanishedPlayers(Player player) {
+        if (isInvisible(player)) hidePlayer(player);
+
+        getOnlineVanishedPlayers().forEach(target -> {
+            if (target == player) return;
+            if (isInvisible(target)) hidePlayer(target);
+        });
     }
 }

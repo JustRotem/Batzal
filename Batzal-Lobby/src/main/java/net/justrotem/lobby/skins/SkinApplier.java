@@ -1,21 +1,15 @@
 package net.justrotem.lobby.skins;
 
-import com.destroystokyo.paper.profile.PlayerProfile;
-import com.destroystokyo.paper.profile.ProfileProperty;
+import net.justrotem.data.bukkit.SkinData;
 import net.justrotem.lobby.Main;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class SkinApplier {
 
-    public static void applySkin(Player player, SkinData data) {
-        PlayerProfile profile = player.getPlayerProfile();
-
-        profile.clearProperties();
-        profile.setProperty(new ProfileProperty("textures", data.value(), data.signature()));
-
-        player.setPlayerProfile(profile);
-        player.updateCommands(); // Optional: refreshes data
+    public static void applySkin(Player player, SkinData skinData) {
+        player.setPlayerProfile(skinData.getProfile(player));
+        player.updateCommands();
     }
 
     public static void refreshPlayer(Player player) {

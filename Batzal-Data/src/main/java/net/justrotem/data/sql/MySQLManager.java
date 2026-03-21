@@ -2,27 +2,28 @@ package net.justrotem.data.sql;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import net.justrotem.data.utils.Utility;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.slf4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 
 public class MySQLManager {
 
-    private final JavaPlugin plugin;
+    private final boolean debug;
+    private final Logger logger;
     private final String host, database, username, password;
     private final int port;
     private HikariDataSource dataSource;
     private final ExecutorService executor = Executors.newFixedThreadPool(2);
 
-    public MySQLManager(JavaPlugin plugin, String host, int port, String database, String username, String password) {
-        this.plugin = plugin;
+    public MySQLManager(boolean debug, Logger logger, String host, int port, String database, String username, String password) {
+        this.debug = debug;
+        this.logger = logger;
         this.host = host;
         this.port = port;
         this.database = database;
@@ -32,19 +33,14 @@ public class MySQLManager {
 
     public void connect() {
         try {
-            // 1️⃣ Load MySQL driver (optional, but safe)
-            Class.forName("com.mysql.cj.jdbc.Driver");
-
-            // 2️⃣ Ensure database exists before Hikari connects to it
-            try (Connection conn = java.sql.DriverManager.getConnection(
-                    "jdbc:mysql://" + host + ":" + port + "/?useSSL=false&autoReconnect=true",
-                    username, password);
-                 Statement stmt = conn.createStatement()) {
-                stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS " + database);
-                if (Utility.isDebug(plugin)) plugin.getLogger().info("Database '" + database + "' ensured.");
+            // Ensure database exists before Hikari connects to it
+            try (Connection conn = java.sql.DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/?useSSL=false&autoReconnect=true", username, password);
+                 PreparedStatement ps = conn.prepareStatement("CREATE DATABASE IF NOT EXISTS " + database)) {
+                ps.executeUpdate();
+                if (debug) logger.info("Database '{}' ensured.", database);
             }
 
-            // 3️⃣ Configure HikariCP
+            // Configure HikariCP
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&autoReconnect=true");
             config.setUsername(username);
@@ -60,9 +56,9 @@ public class MySQLManager {
 
             dataSource = new HikariDataSource(config);
 
-            if (Utility.isDebug(plugin)) plugin.getLogger().info("Connected to MySQL.");
+            if (debug) logger.info("Connected to MySQL.");
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to connect to MySQL: ", e);
+            logger.info("Failed to connect to MySQL: ", e);
         }
     }
 
@@ -70,7 +66,7 @@ public class MySQLManager {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
             executor.shutdown();
-            if (Utility.isDebug(plugin)) plugin.getLogger().info("MySQL pool closed.");
+            if (debug) logger.info("MySQL pool closed.");
         }
     }
 
@@ -79,7 +75,7 @@ public class MySQLManager {
     }
 
     public void executeAsync(Runnable task) {
-        executor.execute(task);
+        DataServiceShutdownController.executeAsync(task);
     }
 
     /**
@@ -92,11 +88,35 @@ public class MySQLManager {
             try (Connection connection = getConnection();
                  PreparedStatement ps = connection.prepareStatement("CREATE TABLE IF NOT EXISTS %table% (".replace("%table%", table) + sqlStatement + ");")) {
                 ps.executeUpdate();
-                 if (Utility.isDebug(plugin)) plugin.getLogger().info("Table '%table%' ensured.".replace("%table%", table));
+                 if (debug) logger.info("Table '%table%' ensured.".replace("%table%", table));
             } catch (SQLException e) {
-                 if (Utility.isDebug(plugin)) plugin.getLogger().severe("Failed to create table '%table%'.".replace("%table%", table));
+                 if (debug) logger.info("Failed to create table '%table%'.".replace("%table%", table));
                 e.printStackTrace();
             }
         });
+    }
+
+    public String getSQLStatement(List<String> keys, boolean create) {
+        // CREATE TABLE mode → return full definitions as-is
+        // Example: "name VARCHAR(32), value TEXT, signature TEXT, head BOOLEAN"
+        if (create) {
+            return String.join(", ", keys);
+        }
+
+        // INSERT/REPLACE mode → extract only the column names
+        // keys: ["name VARCHAR(32)", "value TEXT", ...]
+        // columnNames: ["name", "value", "signature", "head"]
+        List<String> columnNames = keys.stream()
+                .map(def -> def.split(" ", 2)[0])
+                .toList();
+
+        String columns = "(" + String.join(", ", columnNames) + ")";
+
+        // VALUES (?, ?, ?, ...)
+        String placeholders = "(" + String.join(", ",
+                Collections.nCopies(columnNames.size(), "?")
+        ) + ")";
+
+        return columns + " VALUES " + placeholders;
     }
 }

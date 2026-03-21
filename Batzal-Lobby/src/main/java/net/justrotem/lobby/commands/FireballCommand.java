@@ -3,7 +3,7 @@ package net.justrotem.lobby.commands;
 import com.google.common.collect.ImmutableMap;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.lobby.utils.Utility;
+import net.justrotem.lobby.utils.PlayerUtility;
 import org.bukkit.entity.*;
 import org.bukkit.util.Vector;
 import org.jspecify.annotations.Nullable;
@@ -17,7 +17,7 @@ public class FireballCommand implements BasicCommand {
 
     @Override
     public void execute(CommandSourceStack source, String[] args) {
-        if (Utility.isConsole(source)) return;
+        if (PlayerUtility.isConsole(source)) return;
         Player player = (Player) source.getSender();
 
         final String type = args.length > 0 && types.containsKey(args[0]) ? args[0] : "fireball";
@@ -27,7 +27,7 @@ public class FireballCommand implements BasicCommand {
             try {
                 speed = Double.parseDouble(args[1]);
                 speed = Double.max(0, Double.min(speed, 8));
-            } catch (final Exception ignored) {
+            } catch (NumberFormatException ignored) {
             }
         }
 
@@ -41,7 +41,7 @@ public class FireballCommand implements BasicCommand {
     public Collection<String> suggest(CommandSourceStack source, String[] args) {
         List<String> arguments = new ArrayList<>();
 
-        Utility.addCompletion(args, 1, arguments, types.keySet().toArray());
+        PlayerUtility.addCompletion(args, 1, arguments, types.keySet().toArray());
 
         return arguments;
     }

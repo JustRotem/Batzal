@@ -2,10 +2,10 @@ package net.justrotem.lobby.ride;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.data.PlayerManager;
+import net.justrotem.data.utils.TextUtility;
+import net.justrotem.lobby.hooks.PlayerManager;
 import net.justrotem.lobby.ride.nms.PetEnderDragon;
-import net.justrotem.lobby.utils.TextUtils;
-import net.justrotem.lobby.utils.Utility;
+import net.justrotem.lobby.utils.PlayerUtility;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -20,41 +20,52 @@ public class RideCommand implements BasicCommand {
 
     @Override
     public void execute(CommandSourceStack source, String[] args) {
-        if (Utility.isConsole(source)) return;
+        if (PlayerUtility.isConsole(source)) return;
         Player player = (Player) source.getSender();
 
-        if (args.length == 1) {
-            try {
-                EntityType entityType = EntityType.valueOf(args[0]);
-                Location location = player.getLocation();
-
-                if (entityType == EntityType.ENDER_DRAGON) {
-                    PetEnderDragon dragon = DragonFactory.create(player.getWorld(), player.getUniqueId());
-                    dragon.spawn(player.getLocation().toVector());
-                    DragonFactory.tryRide(player, dragon.getEntity());
-                } else RideManager.spawnRidable(player, entityType, location);
-                return;
-            } catch (IllegalArgumentException ignored) {
-            }
-
-            Player target = Utility.getTargetNonNull(player, args[0]);
-            if (target == null) return;
-
-            target.addPassenger(player);
-            target.sendMessage(TextUtils.color("%displayname% &ais riding on top of you!".replace("%displayname%", PlayerManager.getLegacyRealDisplayName(player))));
-            player.sendMessage(TextUtils.color("&aYou are riding %displayname%".replace("%displayname%", PlayerManager.getLegacyRealDisplayName(target))));
+        if (args.length == 0) {
+            player.sendMessage(TextUtility.color("&cUsage: /ride <player/entity> <player>"));
             return;
         }
 
-        player.sendMessage(TextUtils.color("&cUsage: /ride <player/entity>"));
+        EntityType entityType = null;
+        Player ridable = null;
+        try {
+            entityType = EntityType.valueOf(args[0]);
+        } catch (IllegalArgumentException e) {
+            ridable = PlayerUtility.getTarget(player, args[0]);
+        }
+
+        if (entityType == null && ridable == null) return;
+
+        EntityType finalEntityType = entityType;
+        Player finalRidable = ridable;
+        PlayerUtility.runTarget(player, args, 2, permission() + ".others", target -> {
+            if (finalEntityType != null) {
+                Location location = target.getLocation();
+
+                if (finalEntityType == EntityType.ENDER_DRAGON) {
+                    PetEnderDragon dragon = DragonFactory.create(target.getWorld(), target.getUniqueId());
+                    dragon.spawn(target.getLocation().toVector());
+                    DragonFactory.tryRide(target, dragon.getEntity());
+                } else RideManager.spawnRidable(target, finalEntityType, location);
+                return finalEntityType.name().toUpperCase();
+            } else {
+                finalRidable.addPassenger(target);
+                finalRidable.sendMessage(TextUtility.color("%target% &ais riding on top of you!".replace("%target%", PlayerManager.getLegacyRealDisplayName(target))));
+            }
+            return PlayerManager.getLegacyRealDisplayName(finalRidable);
+        }, "&aYou are riding on top of %value%&a!%staff%", "%target% &ais riding on top of %value%&a!");
     }
 
     @Override
     public @NotNull Collection<String> suggest(@NotNull CommandSourceStack source, String[] args) {
         List<String> arguments = new ArrayList<>();
 
-        Utility.addPlayerCompletion(args, 1, arguments, source, "batzal.vanish.others");
-        Utility.addCompletion(args, 1, arguments, EntityType.values());
+        PlayerUtility.addPlayerCompletion(args, 1, arguments, source, "batzal.ride");
+        PlayerUtility.addCompletion(args, 1, arguments, EntityType.values());
+
+        PlayerUtility.addPlayerCompletion(args, 2, arguments, source, permission() + ".others");
 
         return arguments;
     }

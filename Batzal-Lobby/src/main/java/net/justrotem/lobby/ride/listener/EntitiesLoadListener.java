@@ -1,7 +1,6 @@
 package net.justrotem.lobby.ride.listener;
 
 import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
-import net.justrotem.lobby.Main;
 import net.justrotem.lobby.ride.DragonFactory;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Entity;
@@ -10,10 +9,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class EntitiesLoadListener {
 
-    public static void initialize(Main plugin) {
+    public static void initialize(JavaPlugin plugin) {
         plugin.getServer().getPluginManager().registerEvents(new DragonListener(), plugin);
 
         try {

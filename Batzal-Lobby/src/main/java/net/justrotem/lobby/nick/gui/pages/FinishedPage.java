@@ -1,10 +1,10 @@
 package net.justrotem.lobby.nick.gui.pages;
 
+import net.justrotem.data.utils.TextUtility;
 import net.justrotem.lobby.Main;
 import net.justrotem.lobby.nick.NickManager;
 import net.justrotem.lobby.nick.gui.BookGUI;
 import net.justrotem.lobby.nick.gui.BookManager;
-import net.justrotem.lobby.utils.TextUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -17,19 +17,19 @@ public class FinishedPage implements BookGUI {
         String skin = BookManager.getBookData(player, "skin");
         String rank = BookManager.getBookData(player, "rank");
 
-        NickManager.setNick(player, nickname, skin, rank);
+        NickManager.nick(player, nickname, skin, rank);
 
-        Component page = TextUtils.color("You have finished setting up your nickname!\n\nYou are now nicked as %nick%&r.\n\nTo go back to being your  usual self, type:\n&l/nick reset"
+        Component page = TextUtility.color("You have finished setting up your nickname!\n\nYou are now nicked as %nick%&r.\n\nTo go back to being your  usual self, type:\n&l/nick reset"
                 .replace("%nick%", NickManager.getLegacyDisplayName(nickname, rank))
         );
 
-        player.sendMessage(TextUtils.color("&aYou have finished setting up your nickname!"));
+        player.sendMessage(TextUtility.color("&aYou have finished setting up your nickname!"));
 
         Bukkit.getScheduler().runTaskLater(Main.getInstance(), () -> BookManager.openBook(player, title(), page), 20L);
     }
 
     @Override
     public Component title() {
-        return TextUtils.color("NickName Menu");
+        return TextUtility.color("NickName Menu");
     }
 }

@@ -1,6 +1,6 @@
 package net.justrotem.data.utils;
 
-import org.bukkit.entity.Player;
+import net.justrotem.data.hooks.LuckPermsManager;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -15,11 +15,11 @@ public class CooldownManager {
     /**
      * Start a cooldown for a player in a given enum category.
      *
-     * @param player   The player.
+     * @param uuid   The unique id of the player.
      * @param category Any enum constant representing the category.
      * @param duration Duration of the cooldown.
      */
-    public static <E extends Enum<E>> void startCooldown(Player player, E category, Duration duration) {
+    public static <E extends Enum<E>> void startCooldown(UUID uuid, E category, Duration duration) {
         @SuppressWarnings("unchecked")
         Map<Enum<?>, Map<UUID, Instant>> map = cooldowns.computeIfAbsent(
                 category.getDeclaringClass(),
@@ -27,17 +27,17 @@ public class CooldownManager {
         );
         Map<UUID, Instant> playerMap = map.computeIfAbsent(category, c -> new ConcurrentHashMap<>());
 
-        playerMap.put(player.getUniqueId(), Instant.now().plus(duration));
+        playerMap.put(uuid, Instant.now().plus(duration));
     }
 
     /**
      * Check if a player's cooldown has expired.
      */
-    public static <E extends Enum<E> & CooldownType> boolean isReady(Player player, E category) {
+    public static <E extends Enum<E> & CooldownType> boolean isReady(UUID uuid, E category) {
         cleanupExpired(category);
 
         String perm = category.getPermission();
-        if (perm != null && !perm.isEmpty() && player.hasPermission(perm)) return true;
+        if (perm != null && !perm.isEmpty() && LuckPermsManager.hasPermission(uuid, perm)) return true;
 
         Map<Enum<?>, Map<UUID, Instant>> map = cooldowns.get(category.getDeclaringClass());
         if (map == null) return true;
@@ -45,14 +45,14 @@ public class CooldownManager {
         Map<UUID, Instant> playerMap = map.get(category);
         if (playerMap == null) return true;
 
-        Instant expiresAt = playerMap.get(player.getUniqueId());
+        Instant expiresAt = playerMap.get(uuid);
         return expiresAt == null || Instant.now().isAfter(expiresAt);
     }
 
     /**
      * Get remaining cooldown time in seconds.
      */
-    public static <E extends Enum<E>> long getRemaining(Player player, E category) {
+    public static <E extends Enum<E>> long getRemaining(UUID uuid, E category) {
         cleanupExpired(category);
 
         Map<Enum<?>, Map<UUID, Instant>> map = cooldowns.get(category.getDeclaringClass());
@@ -61,7 +61,7 @@ public class CooldownManager {
         Map<UUID, Instant> playerMap = map.get(category);
         if (playerMap == null) return 0;
 
-        Instant expiresAt = playerMap.get(player.getUniqueId());
+        Instant expiresAt = playerMap.get(uuid);
         if (expiresAt == null) return 0;
 
         long remaining = Duration.between(Instant.now(), expiresAt).getSeconds();

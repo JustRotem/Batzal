@@ -4,13 +4,18 @@ import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.justrotem.data.utils.ToggleManager;
 import net.justrotem.lobby.Main;
-import net.justrotem.lobby.utils.TextUtils;
-import net.justrotem.lobby.utils.Utility;
+import net.justrotem.lobby.hooks.LuckPermsManager;
+import net.justrotem.lobby.utils.PlayerUtility;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class LeaveMeAloneCommand implements BasicCommand {
 
@@ -18,9 +23,12 @@ public class LeaveMeAloneCommand implements BasicCommand {
         new BukkitRunnable() {
             @Override
             public void run() {
-                ToggleManager.getAll(Main.ToggleCategory.LeaveMeAlone, true).forEach(player -> {
+                ToggleManager.getAll(Main.ToggleCategory.LeaveMeAlone, true).forEach(uuid -> {
+                    Player player = Bukkit.getPlayer(uuid);
+                    if (player == null) return;
+
                     for (Player target : Bukkit.getOnlinePlayers()) {
-                        if (player == target || !player.hasPermission("batzal.leavemealone") || target.hasPermission("batzal.leavemealone.bypass")) continue;
+                        if (uuid == target.getUniqueId() || !LuckPermsManager.hasPermission(player, "batzal.leavemealone") || LuckPermsManager.hasPermission(target, "batzal.leavemealone.bypass")) continue;
 
                         if (player.getLocation().distance(target.getLocation()) <= 5) {
                             Vector entV = target.getLocation().toVector();
@@ -39,11 +47,22 @@ public class LeaveMeAloneCommand implements BasicCommand {
 
     @Override
     public void execute(CommandSourceStack source, String[] args) {
-        if (Utility.isConsole(source)) return;
+        if (PlayerUtility.isConsole(source)) return;
         Player player = (Player) source.getSender();
 
-        ToggleManager.toggle(Main.ToggleCategory.LeaveMeAlone, player);
-        player.sendMessage(TextUtils.color("&aTurn %mode% Leave me alone!".replace("%mode%", ToggleManager.isOn(Main.ToggleCategory.LeaveMeAlone, player) ? "on" : "off")));
+        PlayerUtility.runTarget(player, args, 1, permission() + ".others", target -> {
+            ToggleManager.toggle(Main.ToggleCategory.LeaveMeAlone, target.getUniqueId());
+            return ToggleManager.isOn(Main.ToggleCategory.LeaveMeAlone, player.getUniqueId()) ? "on" : "off";
+        }, "&aTurn %value% Leave Me Alone%staff%!", "&aTurn %value% Leave Me Alone for %target%&a!");
+    }
+
+    @Override
+    public @NotNull Collection<String> suggest(@NotNull CommandSourceStack source, String[] args) {
+        List<String> arguments = new ArrayList<>();
+
+        PlayerUtility.addPlayerCompletion(args, 1, arguments, source, permission() + ".others");
+
+        return arguments;
     }
 
     @Override

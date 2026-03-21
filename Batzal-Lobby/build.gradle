@@ -6,6 +6,7 @@ plugins {
 }
 
 group = 'net.justrotem'
+version = '1.0'
 
 repositories {
     mavenCentral()
@@ -24,10 +25,12 @@ repositories {
 }
 
 dependencies {
-    // Paper API
-    compileOnly 'io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT'
+    implementation 'net.justrotem:Batzal-Data:1.0.0'
 
-    paperweight.paperDevBundle("1.21.10-R0.1-SNAPSHOT")
+    // Paper API
+    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
+
+    paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
 
     // LuckPerms API (provided by server)
     compileOnly 'net.luckperms:api:5.5'
@@ -35,17 +38,10 @@ dependencies {
     // JSON (for configs or API parsing)
     implementation 'org.json:json:20231013'
 
-    // HikariCP for database pooling
-    implementation 'com.zaxxer:HikariCP:7.0.2'
-
     // SignGUI API
-    implementation 'de.rapha149.signgui:signgui:2.5.4'
+    compileOnly 'de.rapha149.signgui:signgui:2.5.4'
 
     compileOnly 'me.clip:placeholderapi:2.11.7'
-
-    implementation 'net.justrotem:Batzal-Data:1.0.0'
-
-    compileOnly 'net.dmulloy2:ProtocolLib:5.4.0'
 }
 
 jar {
@@ -54,7 +50,7 @@ jar {
 
 tasks {
     runServer {
-        minecraftVersion("1.21.8")
+        minecraftVersion("1.21.11")
     }
 
     processResources {
@@ -69,10 +65,11 @@ tasks {
     shadowJar {
         destinationDirectory = file("$projectDir/../builds")
 
-        // (Optional) rename the file however you want
         archiveBaseName.set(rootProject.name)
-        archiveClassifier.set('') // overwrite the normal JAR
-        mergeServiceFiles() // fixes META-INF merge issues in Gradle 9
+        archiveClassifier.set('')
+        archiveVersion.set('');
+
+        mergeServiceFiles()
     }
 
     build {

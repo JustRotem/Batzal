@@ -13,11 +13,13 @@ public class NickData {
     }
 
     private final UUID uuid;
+    private boolean dirty;
     private boolean nicked;
     private String nickname, skin, rank;
 
     protected NickData(UUID uuid) {
         this.uuid = uuid;
+        this.dirty = true;
         this.nicked = false;
         this.nickname = null;
         this.skin = null;
@@ -26,6 +28,11 @@ public class NickData {
 
     protected NickData(UUID uuid, boolean nicked, String nickname, String skin, String rank) {
         this.uuid = uuid;
+        init(nicked, nickname, skin, rank);
+    }
+
+    private void init(boolean nicked, String nickname, String skin, String rank) {
+        this.dirty = true;
         this.nicked = nicked;
         this.nickname = nickname;
         this.skin = skin;
@@ -34,6 +41,10 @@ public class NickData {
 
     public UUID getUniqueId() {
         return this.uuid;
+    }
+
+    public boolean isDirty() {
+        return this.dirty;
     }
 
     public boolean isNicked() {
@@ -52,23 +63,31 @@ public class NickData {
         return this.rank;
     }
 
-    public NickData setNicked(boolean nicked) {
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
+    public void setNicked(boolean nicked) {
         this.nicked = nicked;
-        return this;
+        this.dirty = true;
     }
 
-    public NickData setNickname(String nickname) {
+    public void setNickname(String nickname) {
         this.nickname = nickname;
-        return this;
+        this.dirty = true;
     }
 
-    public NickData setSkin(String skin) {
+    public void setSkin(String skin) {
         this.skin = skin;
-        return this;
+        this.dirty = true;
     }
 
-    public NickData setRank(String rank) {
+    public void setRank(String rank) {
         this.rank = rank;
-        return this;
+        this.dirty = true;
+    }
+
+    public void clone(NickData nickData) {
+        init(nickData.nicked, nickData.nickname, nickData.skin, nickData.rank);
     }
 }

@@ -20,7 +20,11 @@ repositories {
 
 dependencies {
     // Paper API
-    compileOnly 'io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT'
+    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
+
+    // Velocity API
+    compileOnly 'com.velocitypowered:velocity-api:3.5.0-SNAPSHOT'
+    annotationProcessor 'com.velocitypowered:velocity-api:3.5.0-SNAPSHOT'
 
     // LuckPerms API (provided by server)
     compileOnly 'net.luckperms:api:5.5'
@@ -29,7 +33,7 @@ dependencies {
     implementation 'org.json:json:20231013'
 
     // HikariCP for database pooling
-    implementation 'com.zaxxer:HikariCP:7.0.2'
+    compileOnly 'com.zaxxer:HikariCP:7.0.2'
 }
 
 java {

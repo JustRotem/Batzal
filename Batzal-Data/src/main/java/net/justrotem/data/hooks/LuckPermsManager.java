@@ -1,45 +1,31 @@
 package net.justrotem.data.hooks;
 
-import net.justrotem.data.utils.Utility;
+import net.justrotem.data.utils.TextUtility;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.luckperms.api.LuckPerms;
-import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.model.user.UserManager;
 import net.luckperms.api.node.Node;
+import net.luckperms.api.node.types.InheritanceNode;
 import net.luckperms.api.node.types.PrefixNode;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.annotation.Nullable;
+import java.time.Duration;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-public abstract class LuckPermsManager {
+public class LuckPermsManager {
 
-    private static LuckPerms api;
-    private static JavaPlugin plugin = null;
+    protected static LuckPerms api;
 
-    public static void init(JavaPlugin plugin) {
-        Plugin lpPlugin = Bukkit.getPluginManager().getPlugin("LuckPerms");
-
-        if (lpPlugin != null && lpPlugin.isEnabled()) {
-            try {
-                api = LuckPermsProvider.get(); // get LuckPerms API
-                if (Utility.isDebug(plugin)) plugin.getLogger().info("LuckPerms detected and initialized!");
-                LuckPermsManager.plugin = plugin;
-            } catch (IllegalStateException e) {
-                if (Utility.isDebug(plugin)) plugin.getLogger().warning("LuckPerms plugin is present but API could not be loaded.");
-            }
-        } else {
-            if (Utility.isDebug(plugin)) plugin.getLogger().info("LuckPerms not found, skipping integration.");
-        }
-
+    /**
+     * api be default will be null. you need to initialize before using
+     * @param lpAPI   the LuckPerms api
+     */
+    public static void initializeAPI(LuckPerms lpAPI) {
+        api = lpAPI;
     }
 
     public static boolean isHooked() {
@@ -57,37 +43,47 @@ public abstract class LuckPermsManager {
     }
 
     public static Component getGroupPrefix(String name) {
-        if (api == null) return Component.text().build();
+        if (api == null) return Component.empty();
 
         String prefix = getLegacyGroupPrefix(name);
-        if (prefix.isEmpty()) return Component.text().build();
+        if (prefix.isEmpty()) return Component.empty();
 
-        return color(prefix);
+        return TextUtility.color(prefix);
     }
 
     public static String getLegacyGroupPrefix(String name) {
         if (api == null) return "";
 
-        String prefix = getGroup(name).getCachedData().getMetaData().getPrefix();
-        if (prefix == null) return "";
+        String prefix;
+        try {
+            prefix = Objects.requireNonNull(getGroup(name)).getCachedData().getMetaData().getPrefix();
+            if (prefix == null) return "";
+        } catch (NullPointerException e) {
+            return "";
+        }
 
         return prefix;
     }
 
     public static Component getGroupSuffix(String name) {
-        if (api == null) return Component.text().build();
+        if (api == null) return Component.empty();
 
         String suffix = getLegacyGroupSuffix(name);
-        if (suffix.isEmpty()) return Component.text().build();
+        if (suffix.isEmpty()) return Component.empty();
 
-        return color(suffix);
+        return TextUtility.color(suffix);
     }
 
     public static String getLegacyGroupSuffix(String name) {
         if (api == null) return "";
 
-        String suffix = getGroup(name).getCachedData().getMetaData().getSuffix();
-        if (suffix == null) return "";
+        String suffix;
+        try {
+            suffix = Objects.requireNonNull(getGroup(name)).getCachedData().getMetaData().getSuffix();
+            if (suffix == null) return "";
+        } catch (Exception e) {
+            return "";
+        }
 
         return suffix;
     }
@@ -101,27 +97,43 @@ public abstract class LuckPermsManager {
         return group.getWeight().orElse(0);
     }
 
-    public static Component getGroupDisplayName(String name) {
-        if (api == null) return Component.text().build();
+    public static Component getGroupDisplayName(String group) {
+        if (api == null) return Component.empty();
 
-        String displayname = getGroup(name).getDisplayName();
-        if (displayname == null) return color(getGroup(name).getName());
+        String displayname;
+        try {
+            displayname = Objects.requireNonNull(getGroup(group)).getDisplayName();
+            if (displayname == null) return TextUtility.color(Objects.requireNonNull(getGroup(group)).getName());
+        } catch (Exception e) {
+            return null;
+        }
 
-        return color(displayname);
+        return TextUtility.color(displayname);
     }
 
-    public static User getUser(Player player) {
-        if (api == null) return null;
+    public static String getLegacyGroupDisplayName(String group) {
+        if (api == null) return "";
 
-        return api.getPlayerAdapter(Player.class).getUser(player);
+        String displayname;
+        try {
+            displayname = Objects.requireNonNull(getGroup(group)).getDisplayName();
+            if (displayname == null) return Objects.requireNonNull(getGroup(group)).getName();
+        } catch (Exception e) {
+            return null;
+        }
+
+        return displayname;
     }
 
-    public static User getUser(UUID uuid) {
+    public static String getLegacyGroupDisplayName(UUID uuid) {
+        return getLegacyGroupDisplayName(getPrimaryGroup(uuid));
+    }
+
+    public static CompletableFuture<User> loadUser(UUID uuid) {
         if (api == null) return null;
 
         UserManager userManager = api.getUserManager();
-        CompletableFuture<User> userFuture = userManager.loadUser(uuid);
-        return userFuture.join();
+        return userManager.loadUser(uuid);
     }
 
     public static boolean isUserInherit(UUID uuid, String group) {
@@ -135,37 +147,47 @@ public abstract class LuckPermsManager {
     }
 
     public static Component getPrefix(UUID uuid) {
-        if (api == null) return Component.text().build();
+        if (api == null) return Component.empty();
 
         String prefix = getLegacyPrefix(uuid);
-        if (prefix.isEmpty()) return Component.text().build();
+        if (prefix.isEmpty()) return Component.empty();
 
-        return color(prefix);
+        return TextUtility.color(prefix);
     }
 
     public static String getLegacyPrefix(UUID uuid) {
         if (api == null) return "";
 
-        String prefix = getUser(uuid).getCachedData().getMetaData().getPrefix();
-        if (prefix == null || prefix.isEmpty()) return "";
+        String prefix;
+        try {
+            prefix = Objects.requireNonNull(loadUser(uuid)).join().getCachedData().getMetaData().getPrefix();
+            if (prefix == null || prefix.isEmpty()) return "";
+        } catch (Exception e) {
+            return "";
+        }
 
         return prefix;
     }
 
     public static Component getSuffix(UUID uuid) {
-        if (api == null) return Component.text().build();
+        if (api == null) return Component.empty();
 
         String suffix = getLegacySuffix(uuid);
-        if (suffix.isEmpty()) return Component.text().build();
+        if (suffix.isEmpty()) return Component.empty();
 
-        return color(suffix);
+        return TextUtility.color(suffix);
     }
 
     public static String getLegacySuffix(UUID uuid) {
         if (api == null) return "";
 
-        String suffix = getUser(uuid).getCachedData().getMetaData().getPrefix();
-        if (suffix == null || suffix.isEmpty()) return "";
+        String suffix;
+        try {
+            suffix = Objects.requireNonNull(loadUser(uuid)).join().getCachedData().getMetaData().getPrefix();
+            if (suffix == null || suffix.isEmpty()) return "";
+        } catch (Exception e) {
+            return "";
+        }
 
         return suffix;
     }
@@ -173,76 +195,141 @@ public abstract class LuckPermsManager {
     public static String getPrimaryGroup(UUID uuid) {
         if (api == null) return "default";
 
-        User user = getUser(uuid);
-        if (user == null) return "default";
+        try {
+            User user = Objects.requireNonNull(loadUser(uuid)).join();
 
-        return user.getPrimaryGroup();
+            return user.getPrimaryGroup();
+        } catch (NullPointerException ignored) {
+        }
+        return "default";
     }
 
-    public static String getPrimaryGroup(Player player) {
-        return getPrimaryGroup(player.getUniqueId());
-    }
-
-    public static void setPrefix(Player player, String prefix, int priority) {
+    public static void setPrefix(UUID uuid, String prefix, int priority) {
         if (api == null) return;
 
         // Remove all old prefixes if you want a clean slate
-        removePrefixes(player, priority);
+        removePrefixes(uuid, priority);
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            // Add new prefix with specified priority (higher number = higher priority)
-            addPrefix(player, prefix, priority);
-        }, 5L);
+        addPrefix(uuid, prefix, priority);
     }
 
-    public static void addPrefix(Player player, String prefix, int priority) {
+    public static void addPrefix(UUID uuid, String prefix, int priority) {
         if (api == null) return;
 
-        // Get the LuckPerms user
-        CompletableFuture<User> userFuture = api.getUserManager().loadUser(player.getUniqueId());
+        try {
+            Objects.requireNonNull(loadUser(uuid)).thenAccept(user -> {
+                // Add new prefix with specified priority (higher number = higher priority)
+                PrefixNode node = PrefixNode.builder(prefix, priority).build();
+                user.data().add(node);
 
-        userFuture.thenAccept(user -> {
-            // Add new prefix with specified priority (higher number = higher priority)
-            PrefixNode node = PrefixNode.builder(prefix, priority).build();
-            user.data().add(node);
-
-            // Save changes
-            api.getUserManager().saveUser(user);
-        });
+                // Save changes
+                api.getUserManager().saveUser(user);
+            });
+        } catch (NullPointerException ignored) {
+        }
     }
 
-    public static void removePrefixes(Player player, String prefix, int priority) {
+    public static void removePrefixes(UUID uuid, String prefix, int priority) {
         if (api == null) return;
 
-        // Get the LuckPerms user
-        CompletableFuture<User> userFuture = api.getUserManager().loadUser(player.getUniqueId());
+        try {
+            Objects.requireNonNull(loadUser(uuid)).thenAccept(user -> {
+                // Remove new prefix with specified priority (higher number = higher priority)
+                PrefixNode node = PrefixNode.builder(prefix, priority).build();
+                user.data().remove(node);
 
-        userFuture.thenAccept(user -> {
-            // Remove new prefix with specified priority (higher number = higher priority)
-            PrefixNode node = PrefixNode.builder(prefix, priority).build();
-            user.data().remove(node);
-
-            // Save changes
-            api.getUserManager().saveUser(user);
-        });
+                // Save changes
+                api.getUserManager().saveUser(user);
+            });
+        } catch (NullPointerException ignored) {
+        }
     }
 
-    public static void removePrefixes(Player player, int priority) {
+    public static void removePrefixes(UUID uuid, int priority) {
         if (api == null) return;
 
-        // Get the LuckPerms user
-        CompletableFuture<User> userFuture = api.getUserManager().loadUser(player.getUniqueId());
-
-        userFuture.thenAccept(user -> {
-            for (Node node : user.data().toCollection()) {
-                if (node instanceof PrefixNode prefixNode) {
-                    if (prefixNode.getPriority() == priority) user.data().remove(node);
+        try {
+            Objects.requireNonNull(loadUser(uuid)).thenAccept(user -> {
+                for (Node node : user.data().toCollection()) {
+                    if (node instanceof PrefixNode prefixNode) {
+                        if (prefixNode.getPriority() == priority) user.data().remove(node);
+                    }
                 }
-            }
 
-            // Save changes
-            api.getUserManager().saveUser(user);
-        });
+                // Save changes
+                api.getUserManager().saveUser(user);
+            });
+        } catch (NullPointerException ignored) {
+        }
+    }
+
+    public void setPrimaryGroup(UUID uuid, String group) {
+        if (api == null) return;
+
+        try {
+            Objects.requireNonNull(loadUser(uuid)).thenAccept(user -> {
+                user.setPrimaryGroup(group);
+                api.getUserManager().saveUser(user);
+            });
+        } catch (NullPointerException ignored) {
+        }
+    }
+
+    public void addGroup(UUID uuid, String group) {
+        if (api == null) return;
+
+        try {
+            Objects.requireNonNull(loadUser(uuid)).thenAccept(user -> {
+                Group g = getGroup(group);
+                if (g == null) return;
+
+                Node node = InheritanceNode.builder(g).build();
+                user.data().add(node);
+
+                api.getUserManager().saveUser(user);
+            });
+        } catch (NullPointerException ignored) {
+        }
+    }
+
+    public void addGroupTemporary(UUID uuid, String group, Duration duration) {
+        if (api == null) return;
+
+        try {
+            Objects.requireNonNull(loadUser(uuid)).thenAccept(user -> {
+                Node node = InheritanceNode.builder(group).expiry(duration).build();
+
+                user.data().add(node);
+                api.getUserManager().saveUser(user);
+            });
+        } catch (NullPointerException ignored) {
+        }
+    }
+
+    public void removeGroup(UUID uuid, String group) {
+        if (api == null) return;
+
+        try {
+            Objects.requireNonNull(loadUser(uuid)).thenAccept(user -> {
+                Node node = InheritanceNode.builder(group).build();
+                user.data().remove(node);
+                api.getUserManager().saveUser(user);
+            });
+        } catch (NullPointerException ignored) {
+        }
+    }
+
+    public void clearGroups(UUID uuid) {
+        if (api == null) return;
+
+        try {
+            Objects.requireNonNull(loadUser(uuid)).thenAccept(user -> {
+                // remove any inheritance node
+                user.data().clear(node -> node instanceof InheritanceNode);
+                api.getUserManager().saveUser(user);
+            });
+        } catch (NullPointerException ignored) {
+        }
     }
 
     public static boolean hasPermission(Group group, String permission) {
@@ -250,6 +337,7 @@ public abstract class LuckPermsManager {
 
         try {
             if (group == null) return false;
+            if (permission == null || permission.isEmpty()) return true;
 
             return group.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
         } catch (Exception e) {
@@ -257,32 +345,17 @@ public abstract class LuckPermsManager {
         }
     }
 
-    private static Component color(String text) {
-        final MiniMessage mm = MiniMessage.miniMessage();
+    public static boolean hasPermission(UUID uuid, String permission) {
+        if (api == null) return false;
 
-        // Convert & codes to MiniMessage-compatible tags
-        String replaced = text
-                .replace("&0", "<black>")
-                .replace("&1", "<dark_blue>")
-                .replace("&2", "<dark_green>")
-                .replace("&3", "<dark_aqua>")
-                .replace("&4", "<dark_red>")
-                .replace("&5", "<dark_purple>")
-                .replace("&6", "<gold>")
-                .replace("&7", "<gray>")
-                .replace("&8", "<dark_gray>")
-                .replace("&9", "<blue>")
-                .replace("&a", "<green>")
-                .replace("&b", "<aqua>")
-                .replace("&c", "<red>")
-                .replace("&d", "<light_purple>")
-                .replace("&e", "<yellow>")
-                .replace("&f", "<white>")
-                .replace("&l", "<bold>")
-                .replace("&n", "<underlined>")
-                .replace("&o", "<italic>")
-                .replace("&m", "<strikethrough>")
-                .replace("&r", "<reset>");
-        return mm.deserialize(replaced);
+        try {
+            if (uuid == null) return false;
+            if (permission == null || permission.isEmpty()) return true;
+
+            return Objects.requireNonNull(loadUser(uuid)).join().getCachedData().getPermissionData().checkPermission(permission).asBoolean();
+        } catch (NullPointerException ignored) {
+        }
+
+        return false;
     }
 }

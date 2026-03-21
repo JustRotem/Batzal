@@ -1,17 +1,17 @@
 package net.justrotem.lobby.hooks;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import net.justrotem.lobby.Main;
 import net.justrotem.lobby.nick.NickManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class NickExpansion extends PlaceholderExpansion {
 
-    public static void init(Main plugin) {
+    public static void init(JavaPlugin plugin) {
         Plugin papiPlugin = Bukkit.getPluginManager().getPlugin("PlaceholderAPI");
 
         if (papiPlugin != null && papiPlugin.isEnabled()) {

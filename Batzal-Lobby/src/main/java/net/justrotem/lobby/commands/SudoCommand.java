@@ -2,11 +2,9 @@ package net.justrotem.lobby.commands;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.data.PlayerManager;
-import net.justrotem.lobby.utils.TextUtils;
-import net.justrotem.lobby.utils.Utility;
+import net.justrotem.data.utils.TextUtility;
+import net.justrotem.lobby.utils.PlayerUtility;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -17,16 +15,10 @@ public class SudoCommand implements BasicCommand {
 
     @Override
     public void execute(CommandSourceStack source, String[] args) {
-        if (Utility.isConsole(source)) return;
-        Player player = (Player) source.getSender();
-
         if (args.length < 2) {
-            player.sendMessage(TextUtils.color("&cUsage: /sudo <player> <command> &8- &e(Make sure the command doesn't start with a /)"));
+            source.getSender().sendMessage(TextUtility.color("&cUsage: /sudo <player> <command> &8- &e(Make sure the command doesn't start with a /)"));
             return;
         }
-
-        Player target = Utility.getTargetNonNull(player, args[0]);
-        if (target == null) return;
 
         if (args[1].contains("/")) args[1] = args[1].replaceFirst("/", "");
         StringBuilder text = new StringBuilder();
@@ -34,19 +26,18 @@ public class SudoCommand implements BasicCommand {
             if (i < args.length + 1) text.append(args[i]).append(" ");
         }
 
-        Bukkit.dispatchCommand(target, text.toString());
-        player.sendMessage(TextUtils.color("&aYou successfully made %target% &aexecute the command: &3/%command%&a."
-                .replace("%target%", PlayerManager.getLegacyDisplayName(target))
-                .replace("%command%", text.toString())
-        ));
+        PlayerUtility.runTarget(source.getSender(), args, 1, permission() + ".others", target -> {
+            Bukkit.dispatchCommand(target, text.toString());
+            return text.toString();
+        }, "", "&aYou successfully made %target% &aexecute the command: &3/%value%&a.");
     }
 
     @Override
     public Collection<String> suggest(CommandSourceStack source, String[] args) {
         List<String> arguments = new ArrayList<>();
 
-        Utility.addPlayerCompletion(args, 1, arguments, source, "batzal.ping.others");
-        Utility.addCompletion(args, 2, arguments, Bukkit.getServer().getCommandMap().getKnownCommands().values().toArray());
+        PlayerUtility.addPlayerCompletion(args, 1, arguments, source, permission() + ".others");
+        PlayerUtility.addCompletion(args, 2, arguments, Bukkit.getServer().getCommandMap().getKnownCommands().values().toArray());
 
         return arguments;
     }

@@ -2,11 +2,9 @@ package net.justrotem.lobby.commands;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.data.PlayerManager;
-import net.justrotem.lobby.utils.TextUtils;
-import net.justrotem.lobby.utils.Utility;
+import net.justrotem.data.utils.TextUtility;
+import net.justrotem.lobby.utils.PlayerUtility;
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.Nullable;
@@ -19,27 +17,38 @@ public class HatCommand implements BasicCommand {
 
     @Override
     public void execute(CommandSourceStack source, String[] args) {
-        if (Utility.isConsole(source)) return;
+        if (PlayerUtility.isConsole(source)) return;
         Player player = (Player) source.getSender();
 
-        try {
-            ItemStack item;
-            if (args.length == 1) {
-                item = new ItemStack(Material.valueOf(args[0].toUpperCase()));
-            } else item = player.getInventory().getItemInMainHand();
-
-            player.getInventory().setHelmet(item);
-            player.sendMessage(TextUtils.color("&aSet %item% as your hat!".replace("%item%", item.getType().name())));
-        } catch (IllegalArgumentException e) {
-            player.sendMessage(TextUtils.color("&cCan't find an item by the name %item%!".replace("%item%", args[0])));
+        final ItemStack[] item = {null};
+        if (args.length == 1) {
+            try {
+                item[0] = new ItemStack(Material.valueOf(args[0].toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                player.sendMessage(TextUtility.color("&cCan't find an item by the name %item%!".replace("%item%", args[0])));
+                return;
+            }
         }
+
+        PlayerUtility.runTarget(player, args, item[0] == null ? 1 : 2, permission() + ".others", target -> {
+            if (item[0] == null) item[0] = target.getInventory().getItemInMainHand();
+            target.getInventory().setHelmet(item[0]);
+            return item[0].getType().name();
+        }, "&aSet %value% as your hat!%staff%", "&aSet %value% as %target%&a's hat!");
     }
 
     @Override
     public Collection<String> suggest(CommandSourceStack source, String[] args) {
         List<String> arguments = new ArrayList<>();
 
-        Utility.addCompletion(args,  1, arguments, Material.values());
+        PlayerUtility.addCompletion(args, 1, arguments, Material.values());
+
+        try {
+            new ItemStack(Material.valueOf(args[0].toUpperCase()));
+            PlayerUtility.addPlayerCompletion(args, 2, arguments, source, permission() + ".others");
+        } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException e) {
+            PlayerUtility.addPlayerCompletion(args, 1, arguments, source, permission() + ".others");
+        }
 
         return arguments;
     }

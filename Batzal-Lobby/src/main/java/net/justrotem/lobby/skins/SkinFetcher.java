@@ -1,5 +1,7 @@
 package net.justrotem.lobby.skins;
 
+import net.justrotem.data.bukkit.SkinData;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -24,7 +26,7 @@ public class SkinFetcher {
         String signature = profileResponse.split("\"signature\" : \"")[1].split("\"")[0];
 
         // Step 3: Create SkinData record and adding to IdentityHashMap
-        return new SkinData(name, value, signature);
+        return SkinData.create(name, value, signature, false);
     }
 
     private static String readUrl(String urlString) throws IOException, URISyntaxException {

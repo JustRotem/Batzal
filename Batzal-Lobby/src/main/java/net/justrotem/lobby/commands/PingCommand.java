@@ -2,9 +2,7 @@ package net.justrotem.lobby.commands;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.data.PlayerManager;
-import net.justrotem.lobby.utils.TextUtils;
-import net.justrotem.lobby.utils.Utility;
+import net.justrotem.lobby.utils.PlayerUtility;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,25 +14,19 @@ public class PingCommand implements BasicCommand {
 
     @Override
     public void execute(CommandSourceStack source, String[] args) {
-        if (Utility.isConsole(source)) return;
+        if (PlayerUtility.isConsole(source)) return;
         Player player = (Player) source.getSender();
 
-        if (args.length == 1 && player.hasPermission("batzal.ping.others")) {
-            Player target = Utility.getTargetNonNull(player, args[0]);
-            if (target == null) return;
-
-            player.sendMessage(PlayerManager.getRealDisplayName(target).append(TextUtils.color("&a's ping is %ping%!".replace("%ping%", String.valueOf(target.getPing())))));
-            return;
-        }
-
-        player.sendMessage(TextUtils.color("&aYour ping is %ping%!".replace("%ping%", String.valueOf(player.getPing()))));
+        PlayerUtility.runTarget(player, args, 1, "batzal.ping.others", target -> {
+            return String.valueOf(target.getPing());
+            }, "&aYour ping is %value%!", "%target%&a's ping is %value%!");
     }
 
     @Override
     public @NotNull Collection<String> suggest(@NotNull CommandSourceStack source, String[] args) {
         List<String> arguments = new ArrayList<>();
 
-        Utility.addPlayerCompletion(args, 1, arguments, source, "batzal.ping.others");
+        PlayerUtility.addPlayerCompletion(args, 1, arguments, source, "batzal.ping.others");
 
         return arguments;
     }

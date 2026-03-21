@@ -8,9 +8,13 @@ import java.util.Random;
 
 public class RankManager {
 
-    private static final List<String> RANKS = Main.getInstance().getConfig().getStringList("Nick.Ranks");
+    private static final List<String> RANKS = Main.getInstance().getConfig().getStringList("nick.ranks");
 
     private static final Random RANDOM = new Random();
+
+    public static List<String> getRanks() {
+        return RANKS;
+    }
 
     public static String getRandomRank() {
         return RANKS.get(RANDOM.nextInt(RANKS.size()));

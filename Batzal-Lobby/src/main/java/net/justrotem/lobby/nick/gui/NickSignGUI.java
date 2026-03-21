@@ -2,9 +2,9 @@ package net.justrotem.lobby.nick.gui;
 
 import de.rapha149.signgui.SignGUI;
 import de.rapha149.signgui.exception.SignGUIVersionException;
-import net.justrotem.data.PlayerManager;
+import net.justrotem.data.utils.TextUtility;
+import net.justrotem.lobby.hooks.PlayerManager;
 import net.justrotem.lobby.nick.NickManager;
-import net.justrotem.lobby.utils.TextUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
@@ -64,15 +64,15 @@ public class NickSignGUI {
 
     public static void openBookSign(Player player) {
         Component[] initial = new Component[] {
-                TextUtils.color("^".repeat(15)),
-                TextUtils.color("Enter your"),
-                TextUtils.color("username here")
+                TextUtility.color("^".repeat(15)),
+                TextUtility.color("Enter your"),
+                TextUtility.color("username here")
         };
 
         open(player, initial, nick -> {
-            player.sendMessage(TextUtils.color("&eProcessing request. Please wait..."));
+            player.sendMessage(TextUtility.color("&eProcessing request. Please wait..."));
 
-            String nickname = TextUtils.serialize(nick, TextUtils.Format.PLAIN);
+            String nickname = TextUtility.getText(nick);
             BookManager.setBookData(player, "name", nickname);
             isNameAllowed(player, nickname);
 
@@ -92,9 +92,9 @@ public class NickSignGUI {
 
         if (name.length() < 3) message = "This name cannot be\nless than 3 letters";
         else if (name.length() > 16) message = "This name cannot be\nmore than 16 letters";
-        else if (TextUtils.containsSpecialChars(name)) message = "This name can contain\nonly 0-9, a-z and A-Z";
+        else if (TextUtility.containsSpecialChars(name)) message = "This name can contain\nonly 0-9, a-z and A-Z";
         else if (player.getName().equalsIgnoreCase(name)) message = "You can't nick\nas yourself";
-        else if (PlayerManager.isNameRegistered(name) || Bukkit.getPlayer(name) != null || NickManager.isNicknameUsed(player.getUniqueId(), name)) message = "This name belongs to\na known player!";
+        else if (PlayerManager.isRegisteredOffline(name) || Bukkit.getPlayer(name) != null || NickManager.isNicknameUsed(player.getUniqueId(), name)) message = "This name belongs to\na known player!";
 
         if (!message.isEmpty()) {
             BookManager.setBookData(player, "notallowed", message);

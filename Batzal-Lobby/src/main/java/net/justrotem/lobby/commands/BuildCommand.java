@@ -2,28 +2,48 @@ package net.justrotem.lobby.commands;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.lobby.hooks.LuckPermsManager;
-import net.justrotem.lobby.utils.TextUtils;
-import net.justrotem.lobby.utils.Utility;
+import net.justrotem.lobby.utils.PlayerUtility;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 public class BuildCommand implements BasicCommand {
+
     @Override
     public void execute(CommandSourceStack source, String[] args) {
-        if (Utility.isConsole(source)) return;
+        if (PlayerUtility.isConsole(source)) return;
         Player player = (Player) source.getSender();
 
-        boolean build = !isBuilding(player);
-        updatePlayer(player, getData(player).setBuilding(build));
-
-        player.sendMessage(TextUtils.color(build ? "&aYou can now build!" : "&cYou can no longer build!"));
+        PlayerUtility.runTarget(player, args, 1, permission() + ".others", target -> {
+            boolean build = !isBuilding(target);
+            updatePlayer(target, getData(target).setBuilding(build));
+            return build ? "now" : "no longer";
+        }, "&aYou can %value% build%staff%!", "%target% &acan %value% build!");
     }
 
+    @Override
+    public @NotNull Collection<String> suggest(@NotNull CommandSourceStack source, String[] args) {
+        List<String> arguments = new ArrayList<>();
+
+        PlayerUtility.addPlayerCompletion(args, 1, arguments, source, permission() + ".others");
+
+        return arguments;
+    }
+
+    @Override
+    public @Nullable String permission() {
+        return "batzal.build";
+    }
+
+    //<editor-fold desc="Data methods">
     private static final HashMap<Player, BuildData> recordedBuildData = new HashMap<>();
 
     public static BuildData getData(Player player) {
@@ -46,10 +66,7 @@ public class BuildCommand implements BasicCommand {
         } else {
             GameMode gameMode = buildData.getGameMode();
             player.setGameMode(gameMode != null ? gameMode : Bukkit.getDefaultGameMode());
-            if (LuckPermsManager.hasPermission(player, "batzal.fly")) {
-                player.setAllowFlight(true);
-                player.setFlying(true);
-            }
+            FlyCommand.flyByPermission(player);
         }
 
         ItemStack[] inventory = player.getInventory().getContents();
@@ -118,4 +135,5 @@ public class BuildCommand implements BasicCommand {
             return this;
         }
     }
+    //</editor-fold>
 }

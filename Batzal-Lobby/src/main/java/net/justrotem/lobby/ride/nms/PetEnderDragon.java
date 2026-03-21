@@ -47,7 +47,6 @@ import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.InvocationTargetException;
@@ -76,7 +75,7 @@ public class PetEnderDragon extends EnderDragon/* implements PetEnderDragon*/ {
                 injectEntity(mcKey);
             }
         } catch (NoSuchFieldException | IllegalAccessException ex){
-            JavaPlugin.getPlugin(Main.class).getLogger().log(java.util.logging.Level.WARNING, "Failed to inject custom entity! " +
+            Main.getInstance().getLogger().log(java.util.logging.Level.WARNING, "Failed to inject custom entity! " +
                     "The plugin will still work, but might be slightly less efficient and dragons might not persist.", ex);
 
         }

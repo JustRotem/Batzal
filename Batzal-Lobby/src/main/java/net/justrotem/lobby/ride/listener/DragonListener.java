@@ -1,7 +1,7 @@
 package net.justrotem.lobby.ride.listener;
 
+import net.justrotem.data.utils.TextUtility;
 import net.justrotem.lobby.ride.DragonFactory;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Entity;
@@ -49,7 +49,7 @@ public class DragonListener implements Listener {
 	//stop kick for flying
 	@EventHandler(priority=EventPriority.LOWEST)
 	public void kick(PlayerKickEvent e) {
-		if (!PlainTextComponentSerializer.plainText().serialize(e.reason()).toLowerCase().contains("flying")) return;
+		if (!TextUtility.getText(e.reason()).toLowerCase().contains("flying")) return;
 		if (e.getPlayer().getNoDamageTicks() > 10) e.setCancelled(true);
 		if (DragonFactory.isPetDragon(e.getPlayer().getVehicle())) e.setCancelled(true);
 	}

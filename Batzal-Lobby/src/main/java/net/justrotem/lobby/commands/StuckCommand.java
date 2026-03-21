@@ -3,38 +3,51 @@ package net.justrotem.lobby.commands;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.justrotem.lobby.Main;
-import net.justrotem.lobby.utils.Utility;
+import net.justrotem.lobby.utils.PlayerUtility;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 public class StuckCommand implements BasicCommand {
     @Override
     public void execute(CommandSourceStack source, String[] args) {
-        if (Utility.isConsole(source)) return;
+        if (PlayerUtility.isConsole(source)) return;
         Player player = (Player) source.getSender();
 
-        teleport(player);
+        PlayerUtility.runTarget(player, args, 1, "batzal.stuck.others", StuckCommand::teleport);
+    }
+
+    @Override
+    public @NotNull Collection<String> suggest(@NotNull CommandSourceStack source, String[] args) {
+        List<String> arguments = new ArrayList<>();
+
+        PlayerUtility.addPlayerCompletion(args, 1, arguments, source, "batzal.stuck.others");
+
+        return arguments;
     }
 
     public static Location getSpawn(Player player) {
         try {
             Configuration config = Main.getInstance().getConfig();
 
-            World world = Bukkit.getWorld(config.getString("Spawn.world"));
-            if (world == null) throw new Exception("Spawn->world is not configured correctly, in config.yml");
+            World world = Bukkit.getWorld(Objects.requireNonNull(config.getString("Spawn.world")));
 
             Location location = new Location(world, config.getDouble("Spawn.x"), config.getDouble("Spawn.y"), config.getDouble("Spawn.z"), config.getInt("Spawn.yaw"), config.getInt("Spawn.pitch"));
 
-            if (location.getBlock().getType() == Material.AIR) location.setY(world.getHighestBlockAt(location).getY() + 1);
+            location.setY(TopCommand.getHighestBlockAt(location).getBlockY());
 
-            if (player.hasPermission("batzal.fly")) location.add(0, 2, 0);
+            if (FlyCommand.canFly(player)) location.add(0, 2, 0);
 
             return location;
-        } catch (Exception ignored) {
+        } catch (NullPointerException ignored) {
         }
 
         return null;

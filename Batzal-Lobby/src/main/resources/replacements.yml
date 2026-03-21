@@ -1,0 +1,123 @@
+emojis:
+  Default:
+    1:
+      text: "<3"
+      emoji: "&c❤"
+    2:
+      text: ":star:"
+      emoji: "&6✮"
+    3:
+      text: ":yes:"
+      emoji: "&a&l✔"
+    4:
+      text: ":no:"
+      emoji: "&c&l✖"
+    5:
+      text: ":java:"
+      emoji: "&b☕"
+    6:
+      text: ":arrow:"
+      emoji: "&e&l⇨"
+    7:
+      text: ":shrug:"
+      emoji: "&e¯\_(ツ)_/¯"
+    8:
+      text: ":tableflip:"
+      emoji: "&c(╯°□°）╯&f︵ &7┻━┻"
+    9:
+      text: "o/"
+      emoji: "&d( ﾟ◡ﾟ)/"
+    10:
+      text: ":123:"
+      emoji: "&a1&e2&c3"
+    11:
+      text: ":totem:"
+      emoji: "&b◎&e_&b◎"
+    12:
+      text: ":typing:"
+      emoji: "&e✎&6..."
+    13:
+      text: ":maths:"
+      emoji: "&a&l√&e&l(&a&lπ+x&e&l)&a=&c&lL"
+    14:
+      text: ":snail:"
+      emoji: "&e@&a'&e-&a'"
+    15:
+      text: ":thinking:"
+      emoji: "&6(&a0&6,&ao&c?&6)"
+    16:
+      text: ":gimme:"
+      emoji: "&b༼つ ◕_◕ ༽つ"
+    17:
+      text: ":wizard:"
+      emoji: "&e(&b'&e-&b'&e)⊃&c━&d☆ﾟ.*･｡ﾟ"
+    18:
+      text: ":pvp:"
+      emoji: "&e⚔"
+    19:
+      text: ":peace:"
+      emoji: "&a✌"
+    20:
+      text: ":oof:"
+      emoji: "&c&lOOF"
+    21:
+      text: ":puffer:"
+      emoji: "&e&l<('O')>"
+  Gifting:
+    snow:
+      text: ":snow:"
+      emoji: "&b☃"
+    cat:
+      text: ":cat:"
+      emoji: "&e= &b＾● ⋏ ●＾ &e="
+    happy:
+      text: "^-^"
+      emoji: "&a^-^"
+    dj:
+      text: ":dj:"
+      emoji: "&9ヽ&5(&d⌐&a■&6_&e■&b)&3ノ&9♬"
+    lol:
+      text: "h/"
+      emoji: "&eヽ(^◇^*)/"
+    yey:
+      text: ":yey:"
+      emoji: "&aヽ (◕◡◕) ﾉ"
+    dab:
+      text: ":dab:"
+      emoji: "&d<&eo&d/"
+    cute:
+      text: ":cute:"
+      emoji: "&e(&a✿&eᴖ‿ᴖ)"
+    wow:
+      text: "^_^"
+      emoji: "&a^_^"
+    dog:
+      text: ":dog:"
+      emoji: "&6(ᵔᴥᵔ)"
+    sloth:
+      text: ":sloth:"
+      emoji: "&6( &8⬩ &6⊝ &8⬩ &6)"
+
+banned-words:
+  - "fuck"
+  - "bitch"
+  - "b1tch"
+  - "f@ck"
+  - "fucker"
+  - "f@cker"
+  - "f@ck$r"
+  - "homo"
+  - "h0m0"
+  - "shit"
+  - "sh1t"
+  - "sex"
+  - "s$x"
+  - "porn"
+  - "p0rn"
+  - "hentai"
+  - "suck"
+  - "dick"
+  - "s@ck"
+  - "d!ck"
+  - "!d!iot"
+  - "stup!d"

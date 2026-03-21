@@ -2,162 +2,142 @@ package net.justrotem.lobby.commands;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import net.justrotem.data.PlayerManager;
+import net.justrotem.data.utils.TextUtility;
 import net.justrotem.lobby.Main;
-import net.justrotem.lobby.nick.NickConfig;
+import net.justrotem.lobby.hooks.PlayerManager;
+import net.justrotem.lobby.listeners.ChatHandler;
+import net.justrotem.lobby.nick.NamesConfig;
 import net.justrotem.lobby.nick.NickData;
 import net.justrotem.lobby.nick.NickManager;
-import net.justrotem.lobby.skins.SkinConfig;
-import net.justrotem.lobby.utils.TextUtils;
-import net.justrotem.lobby.utils.Utility;
+import net.justrotem.lobby.utils.PlayerUtility;
 import net.justrotem.lobby.vanish.VanishManager;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class BatzalCommand implements BasicCommand {
     @Override
     public void execute(CommandSourceStack source, String[] args) {
         CommandSender sender = source.getSender();
 
-        if (args.length == 0) {
-            sender.sendMessage(TextUtils.color("&cUsage: /batzal <reload/nicked-players/vanished-players>"));
-            return;
-        }
 
-        if (args[0].equalsIgnoreCase("reload")) {
-            Main plugin = Main.getInstance();
+        if (args.length > 0) {
+            if (args[0].equalsIgnoreCase("reload")) {
+                JavaPlugin plugin = Main.getInstance();
 
-            // Saves config.yml
-            plugin.reloadConfig();
+                // Saves config.yml
+                plugin.reloadConfig();
 
-            // Initialize NameConfig
-            NickConfig.initialize(plugin);
+                // Initialize NameConfig
+                NamesConfig.initialize(plugin);
 
-            // Initialize SkinConfig
-            SkinConfig.initialize(plugin);
+                ChatHandler.loadEmojis();
+                ChatHandler.loadBannedWords();
 
-            sender.sendMessage(TextUtils.color("&aBatzal has been reloaded!"));
-            return;
-        }
-
-        if (args[0].equalsIgnoreCase("nickedplayers") && NickManager.canSee(sender)) {
-            Component message = Component.text().build();
-            List<NickData> list = NickManager.getNickedPlayers();
-
-            List<NickData> online = list.stream().filter(nickData -> Bukkit.getPlayer(nickData.getUniqueId()) != null).toList();
-            if (!online.isEmpty()) {
-                message = TextUtils.color("&eList of all &aOnline &eNicked Players (&b%size%&e): ".replace("%size%", String.valueOf(online.size())));
-
-                for (int i = 0; i < online.size(); i++) {
-                    NickData nickData = online.get(i);
-                    UUID uuid = nickData.getUniqueId();
-
-                    message = message.append(PlayerManager.getRealDisplayName(uuid))
-                            .append(TextUtils.color(" &8- ")
-                                    .append(NickManager.getDisplayName(nickData.getNickname(), nickData.getRank())));
-
-                    if (i < online.size() - 1) message = message.append(TextUtils.color("&8, "));
-                }
-            } else {
-                List<NickData> offline = list.stream().filter(nickData -> Bukkit.getPlayer(nickData.getUniqueId()) == null).toList();
-                if (!offline.isEmpty()) {
-                    message = TextUtils.color("&eList of all &cOffline &eNicked Players (&b%size%&e): ".replace("%size%", String.valueOf(offline.size())));
-
-                    for (int i = 0; i < offline.size(); i++) {
-                        NickData nickData = offline.get(i);
-                        UUID uuid = nickData.getUniqueId();
-
-                        message = message.append(PlayerManager.getRealDisplayName(uuid))
-                                .append(TextUtils.color(" &8- ")
-                                        .append(NickManager.getDisplayName(nickData.getNickname(), nickData.getRank())));
-
-                        if (i < offline.size() - 1) message = message.append(TextUtils.color("&8, "));
-                    }
-                }
+                sender.sendMessage(TextUtility.color("&aBatzal has been reloaded!"));
+                return;
             }
 
-            if (TextUtils.serialize(message, TextUtils.Format.PLAIN).isEmpty()) message = TextUtils.color("&eThere are currently &b0 &eNicked Players.");
+            if (args[0].equalsIgnoreCase("nickedplayers") && NickManager.canSee(sender)) {
+                String message;
+                List<NickData> list = NickManager.getNickedPlayers();
 
-            sender.sendMessage(message);
-            return;
-        }
-
-        if (args[0].equalsIgnoreCase("vanishedplayers") && VanishManager.canSee(sender)) {
-            Component message = Component.text().build();
-            List<Player> online = VanishManager.getOnlineVanishedPlayers();
-            if (!online.isEmpty()) {
-                message = TextUtils.color("&eList of all &aOnline &eVanished Players (&b%size%&e): ".replace("%size%", String.valueOf(online.size())));
-
-                for (int i = 0; i < online.size(); i++) {
-                    Player p = online.get(i);
-
-                    message = message.append(PlayerManager.getRealDisplayName(p));
-
-                    if (i < online.size() - 1) message = message.append(TextUtils.color("&8, "));
+                List<NickData> online = list.stream().filter(nickData -> Bukkit.getPlayer(nickData.getUniqueId()) != null).toList();
+                if (!online.isEmpty()) {
+                    message = "&eList of all &aOnline &eNicked Players (&b%size%&e): %players%".replace("%size%", String.valueOf(online.size())).replace("%players%", String.join(" &8,- ", online.stream().map(nickData -> PlayerManager.getLegacyRealDisplayName(nickData.getUniqueId()) + "&8, " + NickManager.getLegacyDisplayName(nickData.getNickname(), nickData.getRank())).toList()));
+                } else {
+                    List<NickData> offline = list.stream().filter(nickData -> Bukkit.getPlayer(nickData.getUniqueId()) == null).toList();
+                    if (!offline.isEmpty()) {
+                        message = "&eList of all &cOffline &eNicked Players (&b%size%&e): %players%".replace("%size%", String.valueOf(offline.size())).replace("%players%", String.join(" &8- ", offline.stream().map(nickData -> PlayerManager.getLegacyRealDisplayName(nickData.getUniqueId()) + "&8, " + NickManager.getLegacyDisplayName(nickData.getNickname(), nickData.getRank())).toList()));
+                    } else message = "&eThere are currently &b0 &eNicked Players.";
                 }
+
+                sender.sendMessage(TextUtility.color(message));
+                return;
             }
 
-            List<UUID> offline = VanishManager.getOfflineVanishedPlayers();
-            if (!offline.isEmpty()) {
-                message = TextUtils.color("&eList of all &cOffline &eVanished Players (&b%size%&e): ".replace("%size%", String.valueOf(offline.size())));
+            if (args[0].equalsIgnoreCase("vanishedplayers") && VanishManager.canSee(sender)) {
+                String message;
 
-                for (int i = 0; i < offline.size(); i++) {
-                    UUID uuid = offline.get(i);
-
-                    message = message.append(PlayerManager.getRealDisplayName(uuid));
-
-                    if (i < offline.size() - 1) message = message.append(TextUtils.color("&8, "));
+                List<Player> online = VanishManager.getOnlineVanishedPlayers();
+                if (!online.isEmpty()) {
+                    message = "&eList of all &aOnline &eVanished Players (&b%size%&e): %players%".replace("%size%", String.valueOf(online.size())).replace("%players%", String.join("&8,", online.stream().map(PlayerManager::getLegacyRealDisplayName).toList()));
+                } else {
+                    List<UUID> offline = VanishManager.getOfflineVanishedPlayers();
+                    if (!offline.isEmpty()) {
+                        message = "&eList of all &cOffline &eVanished Players (&b%size%&e): %players%".replace("%size%", String.valueOf(offline.size())).replace("%players%", String.join("&8, ", offline.stream().map(PlayerManager::getLegacyRealDisplayName).toList()));
+                    } else message = "&eThere are currently &b0 &eVanished Players.";
                 }
+
+                sender.sendMessage(TextUtility.color(message));
+                return;
             }
 
-            if (TextUtils.serialize(message, TextUtils.Format.PLAIN).isEmpty()) message = TextUtils.color("&eThere are currently &b0 &eVanished Players.");
+            if (args[0].equalsIgnoreCase("spawn") && !PlayerUtility.isConsole(sender)) {
+                Player player = (Player) sender;
 
-            sender.sendMessage(message);
-            return;
+                Configuration config = Main.getInstance().getConfig();
+                World world = player.getWorld();
+
+                double x = player.getX();
+                double z = player.getZ();
+                if (args.length > 1 && args[1].equalsIgnoreCase("center")) {
+                    x = ((int)x) + 0.5;
+                    z = ((int)z) + 0.5;
+                }
+
+                double y = player.getY();
+                float yaw = player.getYaw();
+                float pitch = player.getPitch();
+
+                config.set("Spawn.world", world.getName());
+                config.set("Spawn.x", x);
+                config.set("Spawn.y", y);
+                config.set("Spawn.z", z);
+                config.set("Spawn.yaw", yaw);
+                config.set("Spawn.pitch", pitch);
+
+                Main.getInstance().saveConfig();
+
+                player.sendMessage(TextUtility.color("&a" + TeleportCommand.getLocation(player.getLocation(), true)));
+                return;
+            }
+
+            if (args[0].equalsIgnoreCase("world") && !PlayerUtility.isConsole(sender)) {
+                Player player = (Player) sender;
+
+                try {
+                    World world = Bukkit.getWorld(args[1]);
+                    player.teleport(Objects.requireNonNull(world).getSpawnLocation());
+                } catch (IllegalArgumentException e) {
+                    player.sendMessage(TextUtility.color("&cUsage: /world <world>"));
+                } catch (NullPointerException e) {
+                    player.sendMessage(TextUtility.color("&cThis is an invalid world!"));
+                }
+
+                return;
+            }
         }
 
-        if (args[0].equalsIgnoreCase("spawn")) {
-            if (Utility.isConsole(source)) return;
-            Player player = (Player) source.getSender();
+        sender.sendMessage(TextUtility.color("&cUsage: /batzal <reload/nicked-players/vanished-players" + (!PlayerUtility.isConsole(source) ? "/spawn/world" : "") + ">"));
 
-            Configuration config = Main.getInstance().getConfig();
-            World world = player.getWorld();
-            double x = player.getX();
-            double y = player.getY();
-            double z = player.getZ();
-            float yaw = player.getYaw();
-            float pitch = player.getPitch();
-
-            config.set("Spawn.world", world.getName());
-            config.set("Spawn.x", x);
-            config.set("Spawn.y", y);
-            config.set("Spawn.z", z);
-            config.set("Spawn.yaw", yaw);
-            config.set("Spawn.pitch", pitch);
-
-            Main.getInstance().saveConfig();
-
-            player.sendMessage(TextUtils.color("&aSet spawn in " + player.getLocation().toString().replace("Location{", "").replace("}", "")));
-        }
     }
 
     @Override
-    public Collection<String> suggest(CommandSourceStack source, String[] args) {
+    public @NotNull Collection<String> suggest(CommandSourceStack source, String @NotNull [] args) {
         List<String> arguments = new ArrayList<>();
 
         CommandSender sender = source.getSender();
 
-        Utility.addCompletion(args, 1, arguments, "reload", sender.hasPermission("batzal.nick.see") ? "nickedplayers" : "", VanishManager.canSee(sender) ? "vanishedplayers" : "", "spawn");
+        PlayerUtility.addCompletion(args, 1, arguments, "reload", NickManager.canSee(sender) ? "nickedplayers" : "", VanishManager.canSee(sender) ? "vanishedplayers" : "", "spawn");
+        if (args.length > 1 && args[0].equalsIgnoreCase("spawn")) PlayerUtility.addCompletion(args, 2, arguments, "center");
 
         return arguments;
     }

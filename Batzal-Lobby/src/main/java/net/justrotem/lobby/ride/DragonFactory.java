@@ -11,6 +11,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
@@ -21,7 +22,7 @@ import java.util.UUID;
 
 public class DragonFactory {
 	
-	private static final Main plugin = Main.getInstance();
+	private static final JavaPlugin plugin = Main.getInstance();
 	private static final NamespacedKey ownerKey = new NamespacedKey(plugin, PetEnderDragon.OWNER_ID);
 	private static final NamespacedKey dragonIdKey = new NamespacedKey(plugin, PetEnderDragon.DRAGON_ID);
 	private static boolean canDamage = false;

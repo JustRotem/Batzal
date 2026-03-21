@@ -1,36 +1,20 @@
 package net.justrotem.data.sql;
 
-import net.justrotem.data.utils.Utility;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import java.io.File;
+import org.slf4j.Logger;
 
 public abstract class MySQL {
 
     private static MySQLManager mySQL;
-    private static  AsyncUserDataManager userData;
+    private static PlayerDataManager userData;
+    private static SkinDataManager skinData;
 
-    public static void connect(JavaPlugin plugin) {
-        // Save default mysql.yml if it doesn’t exist
-        Utility.saveResource(plugin, "mysql.yml", false); // false = don’t overwrite existing file
+    public static void connect(MySQLManager mySQLManager) {
+        mySQL = mySQLManager;
 
-        // Load mysql.yml
-        File sqlFile = new File(plugin.getDataFolder(), "mysql.yml");
-        FileConfiguration config = YamlConfiguration.loadConfiguration(sqlFile);
+        mySQLManager.connect();
 
-        mySQL = new MySQLManager(plugin,
-                config.getString("mysql.host"),
-                config.getInt("mysql.port"),
-                config.getString("mysql.database"),
-                config.getString("mysql.username"),
-                config.getString("mysql.password")
-        );
-
-        mySQL.connect();
-
-        userData = new AsyncUserDataManager(mySQL);
+        userData = new PlayerDataManager(mySQLManager);
+        skinData = new SkinDataManager(mySQLManager);
     }
 
     public static void disconnect() {
@@ -41,7 +25,13 @@ public abstract class MySQL {
         return mySQL;
     }
 
-    public static AsyncUserDataManager getUserData() {
+    public static PlayerDataManager getPlayerData() {
         return userData;
     }
+
+    public static SkinDataManager getSkinData() {
+        return skinData;
+    }
+
+    public abstract MySQLManager generateConfig(boolean debug, Logger logger);
 }

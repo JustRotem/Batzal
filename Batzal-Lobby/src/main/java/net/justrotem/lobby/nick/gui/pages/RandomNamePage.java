@@ -1,10 +1,10 @@
 package net.justrotem.lobby.nick.gui.pages;
 
+import net.justrotem.data.utils.TextUtility;
 import net.justrotem.lobby.nick.NickManager;
 import net.justrotem.lobby.nick.gui.BookGUI;
 import net.justrotem.lobby.nick.gui.BookManager;
 import net.justrotem.lobby.nick.gui.NickSignGUI;
-import net.justrotem.lobby.utils.TextUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
@@ -12,16 +12,16 @@ public class RandomNamePage implements BookGUI {
 
     @Override
     public void open(Player player) {
-        player.sendMessage(TextUtils.color("&eGenerating a unique random name. Please wait..."));
+        player.sendMessage(TextUtility.color("&eGenerating a unique random name. Please wait..."));
         String nickname = NickManager.getRandomNick(player);
 
-        Component page = TextUtils.color("We've generated a\nrandom username for\nyou:\n&l%nickname%\n".replace("%nickname%", nickname))
-                .append(TextUtils.color("\n      "))
+        Component page = TextUtility.color("We've generated a\nrandom username for\nyou:\n&l%nickname%\n".replace("%nickname%", nickname))
+                .append(TextUtility.color("\n      "))
                 .append(BookManager.clickable("&a&nUSE NAME", player, "Click here to this name", () -> {
                     BookManager.setBookData(player, "name", nickname);
                     BookManager.openBook(player, "finished");
                 }))
-                .append(TextUtils.color("\n      "))
+                .append(TextUtility.color("\n      "))
                 .append(BookManager.clickable("&c&nTRY AGAIN", player, "Click here to generate another name", () -> {
                     BookManager.setBookData(player, "randomname", "again");
                     BookManager.openBook(player, "randomname");
@@ -34,6 +34,6 @@ public class RandomNamePage implements BookGUI {
 
     @Override
     public Component title() {
-        return TextUtils.color("NickName Menu");
+        return TextUtility.color("NickName Menu");
     }
 }
