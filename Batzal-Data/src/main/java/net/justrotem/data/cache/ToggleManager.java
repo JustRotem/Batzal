@@ -1,67 +1,126 @@
 package net.justrotem.data.cache;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class ToggleManager {
-    // Stores per-category toggles for each player
-    private static final Map<Enum<?>, Map<UUID, Boolean>> toggles = new HashMap<>();
+/**
+ * A generic toggle manager that stores boolean states per player (UUID) and per category.
+ *
+ * <p>This class is designed to be flexible and reusable across different modules (e.g. Lobby, Games),
+ * allowing each module to define its own enum categories without coupling to a shared enum.</p>
+ *
+ * <p>Thread-safe: Uses {@link java.util.concurrent.ConcurrentHashMap} internally.</p>
+ *
+ * <p>Example usage:
+ * <pre>
+ *     ToggleManager.toggle(MyToggle.FIREWORKS, playerUUID);
+ *     boolean enabled = ToggleManager.isOn(MyToggle.FIREWORKS, playerUUID);
+ * </pre>
+ * </p>
+ */
+public final class ToggleManager {
 
-    /**
-     * Check if a player's toggle is ON for a given category.
-     * Automatically registers the player if not present.
-     *
-     * @param category The toggle category (can be command name, e.g., "FIREWORK")
-     * @param uuid   The unique id of the player
-     * @return true if toggle is ON, false otherwise
-     */
-    public static boolean isOn(Enum<?> category, UUID uuid) {
-        Map<UUID, Boolean> map = toggles.computeIfAbsent(category, c -> new HashMap<>());
+    private static final Map<Enum<?>, Map<UUID, Boolean>> TOGGLES = new ConcurrentHashMap<>();
 
-        return map.computeIfAbsent(uuid, p -> false);
+    private ToggleManager() {
     }
 
     /**
-     * Toggle a player's state for a category.
-     * Automatically registers the player if not present.
+     * Checks whether a toggle is enabled for a given player and category.
+     *
+     * @param category The toggle category (must not be null)
+     * @param uuid     The player's UUID (must not be null)
+     * @return true if enabled, false otherwise (default = false)
+     */
+    public static boolean isOn(Enum<?> category, UUID uuid) {
+        if (category == null || uuid == null) return false;
+
+        return TOGGLES
+                .computeIfAbsent(category, key -> new ConcurrentHashMap<>())
+                .getOrDefault(uuid, false);
+    }
+
+    /**
+     * Toggles the current state for a given player and category.
      *
      * @param category The toggle category
-     * @param uuid     The unique id of the player
+     * @param uuid     The player's UUID
      * @return The new state after toggling
      */
     public static boolean toggle(Enum<?> category, UUID uuid) {
-        Map<UUID, Boolean> map = toggles.computeIfAbsent(category, c -> new HashMap<>());
+        if (category == null || uuid == null) return false;
 
+        Map<UUID, Boolean> map = TOGGLES.computeIfAbsent(category, key -> new ConcurrentHashMap<>());
         boolean newState = !map.getOrDefault(uuid, false);
         map.put(uuid, newState);
         return newState;
     }
 
     /**
-     * Manually set a toggle for a player and category
+     * Explicitly sets the toggle value for a player.
      *
      * @param category The toggle category
-     * @param uuid     The unique id of the player
-     * @param value    true = ON, false = OFF
+     * @param uuid     The player's UUID
+     * @param value    true to enable, false to disable
      */
     public static void set(Enum<?> category, UUID uuid, boolean value) {
-        Map<UUID, Boolean> map = toggles.computeIfAbsent(category, c -> new HashMap<>());
-        map.put(uuid, value);
+        if (category == null || uuid == null) return;
+
+        TOGGLES
+                .computeIfAbsent(category, key -> new ConcurrentHashMap<>())
+                .put(uuid, value);
     }
 
     /**
-     * Remove a player from all toggles (e.g., on logout)
+     * Removes all toggle entries associated with a player.
+     * Typically used on player disconnect to prevent memory leaks.
+     *
+     * @param uuid The player's UUID
      */
     public static void removePlayer(UUID uuid) {
-        for (Map<UUID, Boolean> map : toggles.values()) {
-            map.remove(uuid);
-        }
+        if (uuid == null) return;
+
+        TOGGLES.values().forEach(map -> map.remove(uuid));
     }
 
-    public static List<UUID> getAll(Enum<?> category, boolean on) {
-        Map<UUID, Boolean> map = toggles.computeIfAbsent(category, c -> new HashMap<>());
-        return map.keySet().stream().filter(uuid -> map.get(uuid) == on).toList();
+    /**
+     * Retrieves all players with a specific toggle state in a category.
+     *
+     * @param category The toggle category
+     * @param value    The desired state (true/false)
+     * @return List of player UUIDs matching the state
+     */
+    public static List<UUID> getAll(Enum<?> category, boolean value) {
+        if (category == null) return Collections.emptyList();
+
+        Map<UUID, Boolean> map = TOGGLES.get(category);
+        if (map == null) return Collections.emptyList();
+
+        return map.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue() == value)
+                .map(Map.Entry::getKey)
+                .toList();
+    }
+
+    /**
+     * Clears all toggle data for a specific category.
+     *
+     * @param category The toggle category
+     */
+    public static void clearCategory(Enum<?> category) {
+        if (category == null) return;
+        TOGGLES.remove(category);
+    }
+
+    /**
+     * Clears all toggle data across all categories.
+     * Use with caution.
+     */
+    public static void clearAll() {
+        TOGGLES.clear();
     }
 }

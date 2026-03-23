@@ -6,6 +6,7 @@ import net.justrotem.data.service.DataServiceShutdownController;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class SkinDataManager {
@@ -18,12 +19,14 @@ public class SkinDataManager {
         this.sql = sql;
 
         List<String> statement = List.of("name VARCHAR(32) PRIMARY KEY", "value TEXT", "signature TEXT", "head BOOLEAN");
-        sql.createTable(table, sql.getSQLStatement(statement, true));
 
+        sql.createTable(table, sql.getSQLStatement(statement, true));
         this.statement = sql.getSQLStatement(statement, false);
     }
 
     public void update(SkinData skinData) {
+        if (skinData == null) return;
+
         sql.executeAsync(() -> {
             try (Connection conn = sql.getConnection();
                  PreparedStatement ps = conn.prepareStatement(
@@ -35,43 +38,56 @@ public class SkinDataManager {
                 ps.setBoolean(4, skinData.isHead());
                 ps.executeUpdate();
             } catch (SQLException | IllegalStateException e) {
+                // TODO: Replace with proper logger
                 e.printStackTrace();
             }
         });
     }
 
-    public CompletableFuture<SkinData> getData(String name) {
-        return DataServiceShutdownController.track(CompletableFuture.supplyAsync(() -> {
+    public CompletableFuture<Optional<SkinData>> getData(String name) {
+        return DataServiceShutdownController.supplyAsync(() -> {
             try (Connection conn = sql.getConnection();
-                 PreparedStatement ps = conn.prepareStatement("SELECT * FROM " + table + " WHERE name = ?")) {
+                 PreparedStatement ps = conn.prepareStatement(
+                         "SELECT * FROM " + table + " WHERE name = ?"
+                 )) {
+
                 ps.setString(1, name);
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) {
-                    return create(name, rs);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) return Optional.ofNullable(create(name, rs));
                 }
             } catch (SQLException e) {
+                // TODO: Replace with proper logger
                 e.printStackTrace();
             }
-            return null;
-        }));
+
+            return Optional.empty();
+        });
     }
 
     public CompletableFuture<List<SkinData>> getAll() {
-        return DataServiceShutdownController.track(CompletableFuture.supplyAsync(() -> {
+        return DataServiceShutdownController.supplyAsync(() -> {
             try (Connection conn = sql.getConnection();
                  PreparedStatement ps = conn.prepareStatement("SELECT * FROM " + table);
                  ResultSet rs = ps.executeQuery()) {
 
                 List<SkinData> skins = new ArrayList<>();
+
                 while (rs.next()) {
-                    skins.add(create(rs.getString("name"), rs));
+                    SkinData skinData = create(rs.getString("name"), rs);
+
+                    if (skinData != null) skins.add(skinData);
                 }
+
                 return skins;
+
             } catch (SQLException e) {
+                // TODO: Replace with proper logger
                 e.printStackTrace();
             }
+
             return java.util.Collections.emptyList();
-        }));
+        });
     }
 
     private SkinData create(String name, ResultSet rs) {
@@ -81,6 +97,7 @@ public class SkinDataManager {
             boolean head = rs.getBoolean("head");
             return SkinData.create(name, value, signature, head);
         } catch (SQLException e) {
+            // TODO: Replace with proper logger
             e.printStackTrace();
         }
         return null;

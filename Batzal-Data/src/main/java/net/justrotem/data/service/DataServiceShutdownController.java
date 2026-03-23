@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public class DataServiceShutdownController {
 
@@ -27,6 +28,17 @@ public class DataServiceShutdownController {
 
         CompletableFuture<Void> future = CompletableFuture.runAsync(task, EXECUTOR);
         track(future);
+    }
+
+    public static <T> CompletableFuture<T> supplyAsync(Supplier<T> supplier) {
+        if (shuttingDown) {
+            return CompletableFuture.failedFuture(
+                    new IllegalStateException("Data service is shutting down.")
+            );
+        }
+
+        CompletableFuture<T> future = CompletableFuture.supplyAsync(supplier, EXECUTOR);
+        return track(future);
     }
 
     /**

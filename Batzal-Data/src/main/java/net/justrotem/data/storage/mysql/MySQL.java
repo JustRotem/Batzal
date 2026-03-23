@@ -18,7 +18,7 @@ public abstract class MySQL {
     }
 
     public static void disconnect() {
-        mySQL.disconnect();
+        if (mySQL != null) mySQL.disconnect();
     }
 
     public static MySQLManager getMySQL() {

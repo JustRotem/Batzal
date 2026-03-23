@@ -1,5 +1,6 @@
 package net.justrotem.data.model;
 
+import java.util.Objects;
 import java.util.Random;
 
 public class SkinData {
@@ -8,7 +9,7 @@ public class SkinData {
         return new SkinData(name, value, signature, head);
     }
 
-    public static SkinData DEFAULT = new Random().nextBoolean() ? new SkinData(
+    public static final SkinData DEFAULT = new Random().nextBoolean() ? new SkinData(
             "Steve",
             "ewogICJ0aW1lc3RhbXAiIDogMTY2NjMwMjkxNzkzOCwKICAicHJvZmlsZUlkIiA6ICJjOWRlZTM4MDUzYjg0YzI5YjZlZjA5YjJlMDM5OTc0ZiIsCiAgInByb2ZpbGVOYW1lIiA6ICJTQVJfRGVjZW1iZXI1IiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzMxZjQ3N2ViMWE3YmVlZTYzMWMyY2E2NGQwNmY4ZjY4ZmE5M2EzMzg2ZDA0NDUyYWIyN2Y0M2FjZGYxYjYwY2IiCiAgICB9CiAgfQp9",
             "tTCtASRIyuzlNUgSoXgUr6arxABhCR4EQ9+eHaUoO8bADljmUFoQfb6oba8zqe2gIa2mnu5KQaOPQCxcTDjgNv9aIL2smINKxy/60VE4Mgnrh5ntH+mGuDi00V3Bk2CsObFZXz1vgk2UxdQUQ41eVQYm2xBrXFEbXMSoTafWGv0FMTPFpGxGRdduTe3QTEie3GcfAMHCn/9xMMmUxZZ6UVZ+mDe8ARt9/cmK+GmqT8m3kmrz/vq+i29KV4tWvJqsKIVAXm97jVPH9XxVR3tYlheimQSFNrCU8SzNPum/ZhxNAf5Uw90+/K0eaJE59y8tS7KDV5DHrRrHHXb/ywGGklSri1YjFm9AEBk6BeH8Y3Ot/e+zfQbF3rOny2DkBAm/v28FooYd25gXB4MjUFNPj3KdveQh7DpRAvnkmBZMqJCO+Z9fdY4Dw+jmqjII88r6mukWAODvXed/x8bvv55zzNOAxtqtwBTWHIdqWFr/7pMZF26RY1Tluw+pAWGWaKMHtqlGzyOLGMxMKwXqtLNEpIYw52ETwGKaWh8h34cOoI8dhpjfjym4UOihMmazK9LC0EUEHuBlgy5b/Ae71+6UsLNIX8bJwIvN16sP6wpSTNbV6htWoS7/ehvoxdKhI6XEUqWgEoAwmquClPfWiveCV057reoKeVHB9RdTl0sW+HM=",
@@ -25,11 +26,11 @@ public class SkinData {
     private final boolean head;
 
     protected SkinData(String name, String value, String signature, boolean head) {
-        this.name = name;
-        this.dirty = true;
-        this.value = value;
-        this.signature = signature;
+        this.name = Objects.requireNonNull(name, "name cannot be null");
+        this.value = Objects.requireNonNull(value, "value cannot be null");
+        this.signature = Objects.requireNonNull(signature, "signature cannot be null");
         this.head = head;
+        this.dirty = true;
     }
 
     public String getName() {
@@ -56,7 +57,19 @@ public class SkinData {
         this.dirty = dirty;
     }
 
-    public boolean equals(SkinData skinData) {
-        return this.name.equals(skinData.name) && this.value.equals(skinData.value) && this.signature.equals(skinData.signature) && this.head == skinData.head;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SkinData skinData)) return false;
+
+        return head == skinData.head
+                && name.equals(skinData.name)
+                && value.equals(skinData.value)
+                && signature.equals(skinData.signature);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(name, value, signature, head);
     }
 }

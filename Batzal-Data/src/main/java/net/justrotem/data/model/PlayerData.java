@@ -159,12 +159,27 @@ public class PlayerData {
     }
 
     public void updatePlayer(String name, String value, String signature) {
-        if (name != null && !name.isEmpty() && !this.name.equals(name)) this.name = name;
-        if (value != null && !value.isEmpty() && !this.value.equals(value)) this.value = value;
-        if (signature != null && !signature.isEmpty() && !this.signature.equals(signature)) this.signature = signature;
+        boolean updated = false;
+
+        if (name != null && !name.isEmpty() && !name.equals(this.name)) {
+            this.name = name;
+            updated = true;
+        }
+
+        if (value != null && !value.isEmpty() && !value.equals(this.value)) {
+            this.value = value;
+            updated = true;
+        }
+
+        if (signature != null && !signature.isEmpty() && !signature.equals(this.signature)) {
+            this.signature = signature;
+            updated = true;
+        }
+
+        if (updated) this.dirty = true;
     }
 
-    public void clone(PlayerData playerData) {
-        init(playerData.name, playerData.value, playerData.value, playerData.vanished, playerData.toggleChat, playerData.togglePunch, playerData.totalExperience, playerData.rankColor, playerData.prefixColor, playerData.punchMessage, playerData.messageMode, playerData.status, playerData.visibilityState);
+    public void copyFrom(PlayerData playerData) {
+        init(playerData.name, playerData.value, playerData.signature, playerData.vanished, playerData.toggleChat, playerData.togglePunch, playerData.totalExperience, playerData.rankColor, playerData.prefixColor, playerData.punchMessage, playerData.messageMode, playerData.status, playerData.visibilityState);
     }
 }

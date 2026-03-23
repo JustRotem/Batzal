@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -54,7 +55,7 @@ public class PlayerDataManager {
                 ps.setString(4, playerData.getSignature());
                 ps.setBoolean(5, playerData.isVanished());
                 ps.setBoolean(6, playerData.isToggleChat());
-                ps.setBoolean(7, playerData.isVanished());
+                ps.setBoolean(7, playerData.isTogglePunch());
                 ps.setInt(8, playerData.getTotalExperience());
                 ps.setString(9, playerData.getRankColor().name());
                 ps.setString(10, playerData.getPrefixColor().name());
@@ -69,8 +70,8 @@ public class PlayerDataManager {
         });
     }
 
-    public CompletableFuture<PlayerData> getData(UUID uuid) {
-        return DataServiceShutdownController.track(CompletableFuture.supplyAsync(() -> {
+    public CompletableFuture<Optional<PlayerData>> getData(UUID uuid) {
+        return DataServiceShutdownController.supplyAsync(() -> {
             try (Connection conn = sql.getConnection();
                  PreparedStatement ps = conn.prepareStatement(
                          "SELECT * FROM " + table + " WHERE uuid = ?"
@@ -78,17 +79,17 @@ public class PlayerDataManager {
                 ps.setString(1, uuid.toString());
                 ResultSet rs = ps.executeQuery();
                 if (rs.next()) {
-                    return create(uuid, rs);
+                    return Optional.ofNullable(create(uuid, rs));
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            return null;
-        }));
+            return Optional.empty();
+        });
     }
 
     public CompletableFuture<List<PlayerData>> getAll() {
-        return DataServiceShutdownController.track(CompletableFuture.supplyAsync(() -> {
+        return DataServiceShutdownController.supplyAsync(() -> {
             try (Connection conn = sql.getConnection();
                  PreparedStatement ps = conn.prepareStatement("SELECT * FROM " + table);
                  ResultSet rs = ps.executeQuery()) {
@@ -96,15 +97,18 @@ public class PlayerDataManager {
                 List<PlayerData> players = new ArrayList<>();
                 while (rs.next()) {
                     UUID uuid = UUID.fromString(rs.getString("uuid"));
+                    PlayerData playerData = create(uuid, rs);
 
-                    players.add(create(uuid, rs));
+                    if (playerData != null) players.add(playerData);
                 }
+
                 return players;
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+
             return java.util.Collections.emptyList();
-        }));
+        });
     }
 
     private PlayerData create(UUID uuid, ResultSet rs) {

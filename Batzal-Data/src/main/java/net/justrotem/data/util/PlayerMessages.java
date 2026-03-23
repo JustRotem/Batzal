@@ -8,10 +8,14 @@ public final class PlayerMessages {
     }
 
     public static Component playerNotFound(String name) {
-        return TextFormatter.color("&cCan't find a player by the name '%player%'!".replace("%player%", name));
+        return message("&cCan't find a player by the name '%player%'!", name);
     }
 
     public static Component playerNotOnline(String name) {
-        return TextFormatter.color("&c%player%'s not online!".replace("%player%", name));
+        return message("&c%player%'s not online!", name);
+    }
+
+    public static Component message(String template, String player) {
+        return TextFormatter.color(template.replace("%player%", player));
     }
 }

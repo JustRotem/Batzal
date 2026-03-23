@@ -20,7 +20,6 @@ public class MySQLManager {
     private final String host, database, username, password;
     private final int port;
     private HikariDataSource dataSource;
-    private final ExecutorService executor = Executors.newFixedThreadPool(2);
 
     public MySQLManager(boolean debug, Logger logger, String host, int port, String database, String username, String password) {
         this.debug = debug;
@@ -32,18 +31,32 @@ public class MySQLManager {
         this.password = password;
     }
 
+    private String validateDatabaseName(String databaseName) {
+        if (databaseName == null || databaseName.isBlank()) {
+            throw new IllegalArgumentException("Database name cannot be null or blank.");
+        }
+
+        if (!databaseName.matches("[a-zA-Z0-9_]+")) {
+            throw new IllegalArgumentException("Invalid database name: " + databaseName);
+        }
+
+        return databaseName;
+    }
+
     public void connect() {
+        String safeDatabase = validateDatabaseName(database);
+
         try {
             // Ensure database exists before Hikari connects to it
             try (Connection conn = java.sql.DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/?useSSL=false&autoReconnect=true", username, password);
-                 PreparedStatement ps = conn.prepareStatement("CREATE DATABASE IF NOT EXISTS " + database)) {
+                 PreparedStatement ps = conn.prepareStatement("CREATE DATABASE IF NOT EXISTS " + safeDatabase)) {
                 ps.executeUpdate();
-                if (debug) logger.info("Database '{}' ensured.", database);
+                if (debug) logger.info("Database '{}' ensured.", safeDatabase);
             }
 
             // Configure HikariCP
             HikariConfig config = new HikariConfig();
-            config.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&autoReconnect=true");
+            config.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + safeDatabase + "?useSSL=false&autoReconnect=true");
             config.setUsername(username);
             config.setPassword(password);
             config.setMaximumPoolSize(10);
@@ -59,19 +72,23 @@ public class MySQLManager {
 
             if (debug) logger.info("Connected to MySQL.");
         } catch (Exception e) {
-            logger.info("Failed to connect to MySQL: ", e);
+            logger.error("Failed to connect to MySQL.", e);
+            throw new IllegalStateException("Failed to connect to MySQL.", e);
         }
     }
 
     public void disconnect() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
-            executor.shutdown();
             if (debug) logger.info("MySQL pool closed.");
         }
     }
 
     public Connection getConnection() throws SQLException {
+        if (dataSource == null || dataSource.isClosed()) {
+            throw new IllegalStateException("MySQL datasource is not initialized or already closed.");
+        }
+
         return dataSource.getConnection();
     }
 

@@ -12,49 +12,71 @@ import net.luckperms.api.node.types.PrefixNode;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-// TODO REFACTOR: Avoid catching ignored in LuckPermsService
-// TODO REFACTOR: Avoid blocking join() in LuckPermsService where possible
-public class LuckPermsService {
+public final class LuckPermsService {
 
-    protected static LuckPerms api;
+    private static LuckPerms api;
 
-    /**
-     * api be default will be null. you need to initialize before using
-     * @param lpAPI   the LuckPerms api
-     */
+    private LuckPermsService() {
+    }
+
     public static void initializeAPI(LuckPerms lpAPI) {
-        api = lpAPI;
+        api = Objects.requireNonNull(lpAPI, "LuckPerms API cannot be null");
     }
 
     public static boolean isHooked() {
         return api != null;
     }
 
-    public static CompletableFuture<User> loadUser(UUID uuid) {
-        if (api == null) return CompletableFuture.failedFuture(new IllegalStateException("LuckPerms API is not initialized"));
-
-        if (uuid == null) return CompletableFuture.failedFuture(new IllegalArgumentException("UUID cannot be null"));
-
-        return api.getUserManager().loadUser(uuid);
-    }
-
-    public static User getUser(UUID uuid) {
-        if (api == null || uuid == null) return null;
-
-        try {
-            return loadUser(uuid).join();
-        } catch (Exception e) {
-            // TODO: Replace with proper logger
-            e.printStackTrace();
-            return null;
+    private static LuckPerms requireApi() {
+        if (api == null) {
+            throw new IllegalStateException("LuckPerms API is not initialized");
         }
+        return api;
     }
+
+    //<editor-fold desc="User">
+
+    public static Optional<User> getCachedUser(UUID uuid) {
+        if (uuid == null || !isHooked()) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(api.getUserManager().getUser(uuid));
+    }
+
+    public static CompletableFuture<Optional<User>> findUser(UUID uuid) {
+        if (uuid == null || !isHooked()) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+
+        User cached = api.getUserManager().getUser(uuid);
+        if (cached != null) {
+            return CompletableFuture.completedFuture(Optional.of(cached));
+        }
+
+        return requireApi().getUserManager().loadUser(uuid)
+                .thenApply(Optional::ofNullable)
+                .exceptionally(throwable -> Optional.empty());
+    }
+
+    /**
+     * Legacy sync wrapper.
+     * מחזיר רק משתמש טעון כרגע, בלי לחסום.
+     */
+    public static User getUser(UUID uuid) {
+        return getCachedUser(uuid).orElse(null);
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="Group">
 
     public static Group getGroup(String name) {
-        if (api == null) return null;
+        if (!isHooked()) return null;
 
         Group group = api.getGroupManager().getGroup(name);
         if (group != null) return group;
@@ -62,325 +84,339 @@ public class LuckPermsService {
         return api.getGroupManager().getGroup("default");
     }
 
-    public static Component getGroupPrefix(String name) {
-        if (api == null) return Component.empty();
-
-        String prefix = getLegacyGroupPrefix(name);
-        if (prefix.isEmpty()) return Component.empty();
-
-        return TextFormatter.color(prefix);
+    public static int getGroupWeight(String name) {
+        Group group = getGroup(name);
+        return group != null ? group.getWeight().orElse(0) : 0;
     }
+
+    //</editor-fold>
+
+    //<editor-fold desc="Group Meta">
 
     public static String getLegacyGroupPrefix(String name) {
-        if (api == null) return "";
-
-        String prefix;
-        try {
-            prefix = Objects.requireNonNull(getGroup(name)).getCachedData().getMetaData().getPrefix();
-            if (prefix == null) return "";
-        } catch (NullPointerException e) {
-            return "";
-        }
-
-        return prefix;
+        return Optional.ofNullable(getGroup(name))
+                .map(group -> group.getCachedData().getMetaData().getPrefix())
+                .filter(prefix -> prefix != null && !prefix.isEmpty())
+                .orElse("");
     }
 
-    public static Component getGroupSuffix(String name) {
-        if (api == null) return Component.empty();
-
-        String suffix = getLegacyGroupSuffix(name);
-        if (suffix.isEmpty()) return Component.empty();
-
-        return TextFormatter.color(suffix);
+    public static Component getGroupPrefix(String name) {
+        String prefix = getLegacyGroupPrefix(name);
+        return prefix.isEmpty() ? Component.empty() : TextFormatter.color(prefix);
     }
 
     public static String getLegacyGroupSuffix(String name) {
-        if (api == null) return "";
-
-        String suffix;
-        try {
-            suffix = Objects.requireNonNull(getGroup(name)).getCachedData().getMetaData().getSuffix();
-            if (suffix == null) return "";
-        } catch (Exception e) {
-            return "";
-        }
-
-        return suffix;
+        return Optional.ofNullable(getGroup(name))
+                .map(group -> group.getCachedData().getMetaData().getSuffix())
+                .filter(suffix -> suffix != null && !suffix.isEmpty())
+                .orElse("");
     }
 
-    public static int getGroupWeight(String name) {
-        if (api == null) return 0;
-
-        Group group = getGroup(name);
-        if (group == null) return 0;
-
-        return group.getWeight().orElse(0);
-    }
-
-    public static Component getGroupDisplayName(String group) {
-        if (api == null) return Component.empty();
-
-        String displayname;
-        try {
-            displayname = Objects.requireNonNull(getGroup(group)).getDisplayName();
-            if (displayname == null) return TextFormatter.color(Objects.requireNonNull(getGroup(group)).getName());
-        } catch (Exception e) {
-            return Component.empty();
-        }
-
-        return TextFormatter.color(displayname);
+    public static Component getGroupSuffix(String name) {
+        String suffix = getLegacyGroupSuffix(name);
+        return suffix.isEmpty() ? Component.empty() : TextFormatter.color(suffix);
     }
 
     public static String getLegacyGroupDisplayName(String group) {
-        if (api == null) return "";
+        Group g = getGroup(group);
+        if (g == null) return "";
 
-        String displayname;
-        try {
-            displayname = Objects.requireNonNull(getGroup(group)).getDisplayName();
-            if (displayname == null) return Objects.requireNonNull(getGroup(group)).getName();
-        } catch (Exception e) {
-            return "";
-        }
+        String display = g.getDisplayName();
+        return display != null ? display : g.getName();
+    }
 
-        return displayname;
+    public static Component getGroupDisplayName(String group) {
+        String name = getLegacyGroupDisplayName(group);
+        return name.isEmpty() ? Component.empty() : TextFormatter.color(name);
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="User Meta Async">
+
+    public static CompletableFuture<String> getLegacyPrefixAsync(UUID uuid) {
+        return findUser(uuid).thenApply(optional ->
+                optional.map(user -> user.getCachedData().getMetaData().getPrefix())
+                        .filter(prefix -> prefix != null && !prefix.isEmpty())
+                        .orElse("")
+        );
+    }
+
+    public static CompletableFuture<Component> getPrefixAsync(UUID uuid) {
+        return getLegacyPrefixAsync(uuid)
+                .thenApply(prefix -> prefix.isEmpty() ? Component.empty() : TextFormatter.color(prefix));
+    }
+
+    public static CompletableFuture<String> getLegacySuffixAsync(UUID uuid) {
+        return findUser(uuid).thenApply(optional ->
+                optional.map(user -> user.getCachedData().getMetaData().getSuffix())
+                        .filter(suffix -> suffix != null && !suffix.isEmpty())
+                        .orElse("")
+        );
+    }
+
+    public static CompletableFuture<Component> getSuffixAsync(UUID uuid) {
+        return getLegacySuffixAsync(uuid)
+                .thenApply(suffix -> suffix.isEmpty() ? Component.empty() : TextFormatter.color(suffix));
+    }
+
+    public static CompletableFuture<String> getPrimaryGroupAsync(UUID uuid) {
+        return findUser(uuid).thenApply(optional ->
+                optional.map(User::getPrimaryGroup).orElse("default")
+        );
+    }
+
+    public static CompletableFuture<String> getLegacyGroupDisplayNameAsync(UUID uuid) {
+        return getPrimaryGroupAsync(uuid).thenApply(LuckPermsService::getLegacyGroupDisplayName);
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="User Meta Sync Cached Only">
+
+    /**
+     * Sync without blocking: returns only from LP cache.
+     */
+    public static String getLegacyPrefix(UUID uuid) {
+        return getCachedUser(uuid)
+                .map(user -> user.getCachedData().getMetaData().getPrefix())
+                .filter(prefix -> prefix != null && !prefix.isEmpty())
+                .orElse("");
+    }
+
+    public static Component getPrefix(UUID uuid) {
+        String prefix = getLegacyPrefix(uuid);
+        return prefix.isEmpty() ? Component.empty() : TextFormatter.color(prefix);
+    }
+
+    /**
+     * Sync without blocking: returns only from LP cache.
+     */
+    public static String getLegacySuffix(UUID uuid) {
+        return getCachedUser(uuid)
+                .map(user -> user.getCachedData().getMetaData().getSuffix())
+                .filter(suffix -> suffix != null && !suffix.isEmpty())
+                .orElse("");
+    }
+
+    public static Component getSuffix(UUID uuid) {
+        String suffix = getLegacySuffix(uuid);
+        return suffix.isEmpty() ? Component.empty() : TextFormatter.color(suffix);
+    }
+
+    /**
+     * Sync without blocking: returns only from LP cache.
+     */
+    public static String getPrimaryGroup(UUID uuid) {
+        return getCachedUser(uuid)
+                .map(User::getPrimaryGroup)
+                .orElse("default");
     }
 
     public static String getLegacyGroupDisplayName(UUID uuid) {
         return getLegacyGroupDisplayName(getPrimaryGroup(uuid));
     }
 
-    public static boolean isUserInherit(UUID uuid, String group) {
-        if (api == null) return false;
+    //</editor-fold>
 
-        return api.getUserManager().loadUser(uuid)
-                .thenApplyAsync(user -> {
-                    Collection<Group> inheritedGroups = user.getInheritedGroups(user.getQueryOptions());
-                    return inheritedGroups.stream().anyMatch(g -> g.getName().equalsIgnoreCase(group));
-                }).join();
-    }
-
-    public static Component getPrefix(UUID uuid) {
-        if (api == null) return Component.empty();
-
-        String prefix = getLegacyPrefix(uuid);
-        if (prefix.isEmpty()) return Component.empty();
-
-        return TextFormatter.color(prefix);
-    }
-
-    public static String getLegacyPrefix(UUID uuid) {
-        if (api == null) return "";
-
-        String prefix;
-        try {
-            prefix = loadUser(uuid).join().getCachedData().getMetaData().getPrefix();
-            if (prefix == null || prefix.isEmpty()) return "";
-        } catch (Exception e) {
-            return "";
-        }
-
-        return prefix;
-    }
-
-    public static Component getSuffix(UUID uuid) {
-        if (api == null) return Component.empty();
-
-        String suffix = getLegacySuffix(uuid);
-        if (suffix.isEmpty()) return Component.empty();
-
-        return TextFormatter.color(suffix);
-    }
-
-    public static String getLegacySuffix(UUID uuid) {
-        if (api == null) return "";
-
-        String suffix;
-        try {
-            suffix = loadUser(uuid).join().getCachedData().getMetaData().getSuffix();
-            if (suffix == null || suffix.isEmpty()) return "";
-        } catch (Exception e) {
-            return "";
-        }
-
-        return suffix;
-    }
-
-    public static String getPrimaryGroup(UUID uuid) {
-        if (api == null) return "default";
-
-        User user = loadUser(uuid).join();
-        if (user == null) return "default";
-
-        return user.getPrimaryGroup();
-    }
-
-    public static void setPrefix(UUID uuid, String prefix, int priority) {
-        if (api == null) return;
-
-        // Remove all old prefixes if you want a clean slate
-        removePrefixes(uuid, priority);
-
-        addPrefix(uuid, prefix, priority);
-    }
-
-    public static void addPrefix(UUID uuid, String prefix, int priority) {
-        if (api == null) return;
-
-        loadUser(uuid).thenAccept(user -> {
-            if (user == null) return;
-
-            PrefixNode node = PrefixNode.builder(prefix, priority).build();
-            user.data().add(node);
-
-            api.getUserManager().saveUser(user);
-        }).exceptionally(throwable -> {
-            // TODO: Replace with proper logger
-            throwable.printStackTrace();
-            return null;
-        });
-    }
-
-    public static void removePrefixes(UUID uuid, String prefix, int priority) {
-        if (api == null) return;
-
-        loadUser(uuid).thenAccept(user -> {
-            if (user == null) return;
-
-            PrefixNode node = PrefixNode.builder(prefix, priority).build();
-            user.data().remove(node);
-
-            api.getUserManager().saveUser(user);
-        }).exceptionally(throwable -> {
-            // TODO: Replace with proper logger
-            throwable.printStackTrace();
-            return null;
-        });
-    }
-
-    public static void removePrefixes(UUID uuid, int priority) {
-        if (api == null) return;
-
-        loadUser(uuid).thenAccept(user -> {
-            if (user == null) return;
-
-            for (Node node : user.data().toCollection()) {
-                if (node instanceof PrefixNode prefixNode) {
-                    if (prefixNode.getPriority() == priority) user.data().remove(node);
-                }
-            }
-
-            api.getUserManager().saveUser(user);
-        }).exceptionally(throwable -> {
-            // TODO: Replace with proper logger
-            throwable.printStackTrace();
-            return null;
-        });
-    }
-
-    public void setPrimaryGroup(UUID uuid, String group) {
-        if (api == null) return;
-
-        loadUser(uuid).thenAccept(user -> {
-            if (user == null) return;
-
-            user.setPrimaryGroup(group);
-            api.getUserManager().saveUser(user);
-        }).exceptionally(throwable -> {
-            // TODO: Replace with proper logger
-            throwable.printStackTrace();
-            return null;
-        });
-    }
-
-    public static void addGroup(UUID uuid, String group) {
-        if (api == null) return;
-
-        loadUser(uuid).thenAccept(user -> {
-            if (user == null) return;
-
-            Group g = getGroup(group);
-            if (g == null) return;
-
-            Node node = InheritanceNode.builder(g).build();
-            user.data().add(node);
-
-            api.getUserManager().saveUser(user);
-        }).exceptionally(throwable -> {
-            // TODO: Replace with proper logger
-            throwable.printStackTrace();
-            return null;
-        });
-    }
-
-    public static void addGroupTemporary(UUID uuid, String group, Duration duration) {
-        if (api == null) return;
-
-        try {
-            loadUser(uuid).thenAccept(user -> {
-                if (user == null) return;
-
-                Node node = InheritanceNode.builder(group).expiry(duration).build();
-                user.data().add(node);
-
-                api.getUserManager().saveUser(user);
-            }).exceptionally(throwable -> {
-                // TODO: Replace with proper logger
-                throwable.printStackTrace();
-                return null;
-            });
-        } catch (NullPointerException ignored) {
-        }
-    }
-
-    public static void removeGroup(UUID uuid, String group) {
-        if (api == null) return;
-
-        try {
-            loadUser(uuid).thenAccept(user -> {
-                if (user == null) return;
-
-                Node node = InheritanceNode.builder(group).build();
-                user.data().remove(node);
-
-                api.getUserManager().saveUser(user);
-            }).exceptionally(throwable -> {
-                // TODO: Replace with proper logger
-                throwable.printStackTrace();
-                return null;
-            });
-        } catch (NullPointerException ignored) {
-        }
-    }
-
-    public static void clearGroups(UUID uuid) {
-        if (api == null) return;
-
-        loadUser(uuid).thenAccept(user -> {
-            if (user == null) return;
-
-            user.data().clear(node -> node instanceof InheritanceNode);
-            api.getUserManager().saveUser(user);
-        }).exceptionally(throwable -> {
-            // TODO: Replace with proper logger
-            throwable.printStackTrace();
-            return null;
-        });
-    }
+    //<editor-fold desc="Permissions">
 
     public static boolean hasPermission(Group group, String permission) {
-        if (api == null) return false;
-        if (group == null) return false;
-        if (permission == null || permission.isEmpty()) return true;
+        if (group == null || permission == null || permission.isBlank()) {
+            return false;
+        }
 
         return group.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
     }
 
+    /**
+     * Sync without blocking: cached user only.
+     */
     public static boolean hasPermission(UUID uuid, String permission) {
-        if (permission == null || permission.isEmpty()) return true;
+        if (permission == null || permission.isBlank()) {
+            return false;
+        }
 
-        User user =  getUser(uuid);
-        if (user == null) return false;
-
-        return user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
+        return getCachedUser(uuid)
+                .map(user -> user.getCachedData().getPermissionData().checkPermission(permission).asBoolean())
+                .orElse(false);
     }
+
+    public static CompletableFuture<Boolean> hasPermissionAsync(UUID uuid, String permission) {
+        if (permission == null || permission.isBlank()) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return findUser(uuid).thenApply(optional ->
+                optional.map(user -> user.getCachedData().getPermissionData().checkPermission(permission).asBoolean())
+                        .orElse(false)
+        );
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="Groups Async">
+
+    public static CompletableFuture<Boolean> isUserInheritAsync(UUID uuid, String group) {
+        if (group == null || group.isBlank() || !isHooked()) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return findUser(uuid).thenApply(optional -> optional
+                .map(user -> {
+                    Collection<Group> groups = user.getInheritedGroups(user.getQueryOptions());
+                    return groups.stream().anyMatch(g -> g.getName().equalsIgnoreCase(group));
+                })
+                .orElse(false));
+    }
+
+    /**
+     * Sync cached-only fallback.
+     */
+    public static boolean isUserInherit(UUID uuid, String group) {
+        if (group == null || group.isBlank()) {
+            return false;
+        }
+
+        return getCachedUser(uuid)
+                .map(user -> {
+                    Collection<Group> groups = user.getInheritedGroups(user.getQueryOptions());
+                    return groups.stream().anyMatch(g -> g.getName().equalsIgnoreCase(group));
+                })
+                .orElse(false);
+    }
+
+    public static CompletableFuture<Boolean> addGroup(UUID uuid, String group) {
+        if (group == null || group.isBlank() || !isHooked()) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return findUser(uuid).thenCompose(optional -> {
+            User user = optional.orElse(null);
+            Group g = getGroup(group);
+
+            if (user == null || g == null) {
+                return CompletableFuture.completedFuture(false);
+            }
+
+            user.data().add(InheritanceNode.builder(g).build());
+            return requireApi().getUserManager().saveUser(user).thenApply(ignored -> true);
+        }).exceptionally(throwable -> false);
+    }
+
+    public static CompletableFuture<Boolean> addGroupTemporary(UUID uuid, String group, Duration duration) {
+        if (group == null || group.isBlank() || duration == null || !isHooked()) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return findUser(uuid).thenCompose(optional -> {
+            User user = optional.orElse(null);
+            if (user == null) {
+                return CompletableFuture.completedFuture(false);
+            }
+
+            user.data().add(InheritanceNode.builder(group).expiry(duration).build());
+            return requireApi().getUserManager().saveUser(user).thenApply(ignored -> true);
+        }).exceptionally(throwable -> false);
+    }
+
+    public static CompletableFuture<Boolean> removeGroup(UUID uuid, String group) {
+        if (group == null || group.isBlank() || !isHooked()) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return findUser(uuid).thenCompose(optional -> {
+            User user = optional.orElse(null);
+            if (user == null) {
+                return CompletableFuture.completedFuture(false);
+            }
+
+            user.data().remove(InheritanceNode.builder(group).build());
+            return requireApi().getUserManager().saveUser(user).thenApply(ignored -> true);
+        }).exceptionally(throwable -> false);
+    }
+
+    public static CompletableFuture<Boolean> clearGroups(UUID uuid) {
+        if (!isHooked()) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return findUser(uuid).thenCompose(optional -> {
+            User user = optional.orElse(null);
+            if (user == null) {
+                return CompletableFuture.completedFuture(false);
+            }
+
+            user.data().clear(node -> node instanceof InheritanceNode);
+            return requireApi().getUserManager().saveUser(user).thenApply(ignored -> true);
+        }).exceptionally(throwable -> false);
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="Prefix Management Async">
+
+    public static CompletableFuture<Boolean> setPrefix(UUID uuid, String prefix, int priority) {
+        if (prefix == null || prefix.isBlank() || !isHooked()) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return removePrefixes(uuid, priority)
+                .thenCompose(success -> addPrefix(uuid, prefix, priority));
+    }
+
+    public static CompletableFuture<Boolean> addPrefix(UUID uuid, String prefix, int priority) {
+        if (prefix == null || prefix.isBlank() || !isHooked()) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return findUser(uuid).thenCompose(optional -> {
+            User user = optional.orElse(null);
+            if (user == null) {
+                return CompletableFuture.completedFuture(false);
+            }
+
+            user.data().add(PrefixNode.builder(prefix, priority).build());
+            return requireApi().getUserManager().saveUser(user).thenApply(ignored -> true);
+        }).exceptionally(throwable -> false);
+    }
+
+    public static CompletableFuture<Boolean> removePrefixes(UUID uuid, String prefix, int priority) {
+        if (prefix == null || prefix.isBlank() || !isHooked()) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return findUser(uuid).thenCompose(optional -> {
+            User user = optional.orElse(null);
+            if (user == null) {
+                return CompletableFuture.completedFuture(false);
+            }
+
+            user.data().remove(PrefixNode.builder(prefix, priority).build());
+            return requireApi().getUserManager().saveUser(user).thenApply(ignored -> true);
+        }).exceptionally(throwable -> false);
+    }
+
+    public static CompletableFuture<Boolean> removePrefixes(UUID uuid, int priority) {
+        if (!isHooked()) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        return findUser(uuid).thenCompose(optional -> {
+            User user = optional.orElse(null);
+            if (user == null) {
+                return CompletableFuture.completedFuture(false);
+            }
+
+            for (Node node : user.data().toCollection()) {
+                if (node instanceof PrefixNode prefixNode && prefixNode.getPriority() == priority) {
+                    user.data().remove(node);
+                }
+            }
+
+            return requireApi().getUserManager().saveUser(user).thenApply(ignored -> true);
+        }).exceptionally(throwable -> false);
+    }
+
+    //</editor-fold>
 }
