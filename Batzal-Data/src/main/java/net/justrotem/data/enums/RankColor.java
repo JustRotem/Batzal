@@ -1,7 +1,13 @@
 package net.justrotem.data.enums;
 
+/**
+ * Defines rank color configurations.
+ */
 public class RankColor {
 
+    /**
+     * Represents main rank colors with metadata.
+     */
     public enum Color {
         Red('c', 0, 0),
         Gold('6', 1, 35),
@@ -28,19 +34,31 @@ public class RankColor {
             this.level = level;
         }
 
+        /**
+         * Returns legacy color code.
+         */
         public String getColorCode() {
             return "&" + this.colorCode;
         }
 
+        /**
+         * Returns weight for sorting.
+         */
         public int getWeight() {
             return this.weight;
         }
 
+        /**
+         * Returns required level for this color.
+         */
         public int getLevel() {
             return this.level;
         }
     }
 
+    /**
+     * Represents prefix colors.
+     */
     public enum PrefixColor {
         Gold('6'),
         Aqua('b');
@@ -51,6 +69,9 @@ public class RankColor {
             this.colorCode = colorCode;
         }
 
+        /**
+         * Returns legacy color code.
+         */
         public String getColorCode() {
             return "&" + colorCode;
         }

@@ -9,6 +9,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Handles persistence and retrieval of {@link SkinData} using MySQL.
+ *
+ * <p>All operations are executed asynchronously.</p>
+ */
 public class SkinDataManager {
 
     private final MySQLManager sql;
@@ -24,6 +29,11 @@ public class SkinDataManager {
         this.statement = sql.getSQLStatement(statement, false);
     }
 
+    /**
+     * Saves or updates a skin asynchronously.
+     *
+     * @param skinData skin data to persist
+     */
     public void update(SkinData skinData) {
         if (skinData == null) return;
 
@@ -44,6 +54,12 @@ public class SkinDataManager {
         });
     }
 
+    /**
+     * Retrieves a skin by name asynchronously.
+     *
+     * @param name skin name
+     * @return future containing skin if found
+     */
     public CompletableFuture<Optional<SkinData>> getData(String name) {
         return DataServiceShutdownController.supplyAsync(() -> {
             try (Connection conn = sql.getConnection();
@@ -65,6 +81,11 @@ public class SkinDataManager {
         });
     }
 
+    /**
+     * Retrieves all stored skins asynchronously.
+     *
+     * @return future containing list of skins
+     */
     public CompletableFuture<List<SkinData>> getAll() {
         return DataServiceShutdownController.supplyAsync(() -> {
             try (Connection conn = sql.getConnection();
@@ -90,6 +111,11 @@ public class SkinDataManager {
         });
     }
 
+    /**
+     * Creates a SkinData instance from a database row.
+     *
+     * @return SkinData or null if parsing fails
+     */
     private SkinData create(String name, ResultSet rs) {
         try {
             String value = rs.getString("value");

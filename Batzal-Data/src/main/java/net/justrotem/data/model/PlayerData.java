@@ -4,8 +4,17 @@ import net.justrotem.data.enums.*;
 
 import java.util.UUID;
 
+/**
+ * Represents all persistent player data stored in the system.
+ *
+ * <p>This object is mutable and uses a "dirty" flag to track changes
+ * that need to be persisted.</p>
+ */
 public class PlayerData {
 
+    /**
+     * Factory method for creating a PlayerData instance.
+     */
     public static PlayerData create(UUID uuid, String name, String value, String signature, boolean vanished, boolean toggleChat, boolean togglePunch, int totalExperience, RankColor.Color rankColor, RankColor.PrefixColor prefixColor, PunchMessage punchMessage, MessageMode messageMode, Status status, Visibility.State visibilityState) {
         return new PlayerData(uuid, name, value, signature, vanished, toggleChat, togglePunch, totalExperience, rankColor, prefixColor, punchMessage, messageMode, status, visibilityState);
     }
@@ -27,6 +36,11 @@ public class PlayerData {
         init(name, value, signature, vanished, toggleChat, togglePunch, totalExperience, rankColor, prefixColor, punchMessage, messageMode, status, visibilityState);
     }
 
+    /**
+     * Initializes or reinitializes all fields.
+     *
+     * <p>Marks the object as dirty.</p>
+     */
     protected void init(String name, String value, String signature, boolean vanished, boolean toggleChat, boolean togglePunch, int totalExperience, RankColor.Color rankColor, RankColor.PrefixColor prefixColor, PunchMessage punchMessage, MessageMode messageMode, Status status, Visibility.State visibilityState) {
         this.dirty = true;
         this.name = name;
@@ -158,6 +172,11 @@ public class PlayerData {
         this.dirty = true;
     }
 
+    /**
+     * Updates name and skin data if changed.
+     *
+     * <p>Marks as dirty only if a change occurs.</p>
+     */
     public void updatePlayer(String name, String value, String signature) {
         boolean updated = false;
 
@@ -179,6 +198,11 @@ public class PlayerData {
         if (updated) this.dirty = true;
     }
 
+    /**
+     * Copies all data from another PlayerData instance.
+     *
+     * <p>This resets the current state and marks it as dirty.</p>
+     */
     public void copyFrom(PlayerData playerData) {
         init(playerData.name, playerData.value, playerData.signature, playerData.vanished, playerData.toggleChat, playerData.togglePunch, playerData.totalExperience, playerData.rankColor, playerData.prefixColor, playerData.punchMessage, playerData.messageMode, playerData.status, playerData.visibilityState);
     }

@@ -3,12 +3,23 @@ package net.justrotem.data.model;
 import java.util.Objects;
 import java.util.Random;
 
+/**
+ * Represents a skin (texture + signature).
+ *
+ * <p>Includes a dirty flag for persistence tracking.</p>
+ */
 public class SkinData {
 
+    /**
+     * Factory method for creating SkinData.
+     */
     public static SkinData create(String name, String value, String signature, boolean head) {
         return new SkinData(name, value, signature, head);
     }
 
+    /**
+     * Default skin (randomly Steve or Alex).
+     */
     public static final SkinData DEFAULT = new Random().nextBoolean() ? new SkinData(
             "Steve",
             "ewogICJ0aW1lc3RhbXAiIDogMTY2NjMwMjkxNzkzOCwKICAicHJvZmlsZUlkIiA6ICJjOWRlZTM4MDUzYjg0YzI5YjZlZjA5YjJlMDM5OTc0ZiIsCiAgInByb2ZpbGVOYW1lIiA6ICJTQVJfRGVjZW1iZXI1IiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzMxZjQ3N2ViMWE3YmVlZTYzMWMyY2E2NGQwNmY4ZjY4ZmE5M2EzMzg2ZDA0NDUyYWIyN2Y0M2FjZGYxYjYwY2IiCiAgICB9CiAgfQp9",
@@ -57,6 +68,9 @@ public class SkinData {
         this.dirty = dirty;
     }
 
+    /**
+     * Compares skins based on value, signature, name, and head flag.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
